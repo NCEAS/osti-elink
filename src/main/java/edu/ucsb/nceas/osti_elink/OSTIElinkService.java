@@ -202,8 +202,9 @@ public class OSTIElinkService {
      * @throws ParserConfigurationException 
      * @throws IOException 
      * @throws SAXException 
+     * @throws OSTIElinkException 
      */
-    String buildMinimalMetadata(String siteCode) throws ParserConfigurationException, SAXException, IOException {
+    String buildMinimalMetadata(String siteCode) throws ParserConfigurationException, SAXException, IOException, OSTIElinkException {
         if (siteCode == null || siteCode.trim().equals("")) {
             throw new IllegalArgumentException("DOIService.buildMinimalMetadata - the site code for generating DOI can't be null or blank.");
         }
@@ -215,13 +216,20 @@ public class OSTIElinkService {
             minimalMetadataDoc = dBuilder.parse(is);
         }
         NodeList nodes = minimalMetadataDoc.getElementsByTagName("site_input_code");
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            if (node.getNodeType() == Node.TEXT_NODE) {
-                Text newText = minimalMetadataDoc.createTextNode(siteCode);
-                node.getParentNode().replaceChild(newText, node);
-                break;
+        if (nodes.getLength() > 0) {
+            //Only change the first one
+            Node node = nodes.item(0);
+            NodeList children = node.getChildNodes();
+            for (int i=0; i<children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeType() == Node.TEXT_NODE) {
+                    Text newText = minimalMetadataDoc.createTextNode(siteCode);
+                    child.getParentNode().replaceChild(newText, child);
+                    break;
+                }
             }
+        } else {
+            throw new OSTIElinkException("DOIService.buildMinimalMetadata - the minimal metadata should have the site_input_code element.");
         }
         DOMImplementationLS domImplementation = (DOMImplementationLS) minimalMetadataDoc.getImplementation();
         LSSerializer lsSerializer = domImplementation.createLSSerializer();
