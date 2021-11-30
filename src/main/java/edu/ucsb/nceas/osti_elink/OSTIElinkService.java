@@ -48,6 +48,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -147,9 +148,15 @@ public class OSTIElinkService {
             metadata = new String(response);
             log.debug("OSTIElinkService.getMetadata - the reponse is " + metadata);
             if (metadata == null || metadata.trim().equals("")) {
-                throw new OSTIElinkException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the doi " + doi);
+                throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the doi " + doi);
             } else if (!metadata.contains(doi)) {
-                throw new OSTIElinkException(metadata);
+                Document doc = generateDOM(response);
+                String numFound = getAttributeValue(doc, "records", "numfound");
+                if (numFound.equals("0")) {
+                    throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - OSTI can't find the doi " + doi + " since " + metadata);
+                } else {
+                    throw new OSTIElinkException(metadata);
+                }
             }
         }
         return metadata;
@@ -228,7 +235,7 @@ public class OSTIElinkService {
         default:
             throw new OSTIElinkException("Unrecognized HTTP method requested.");
         }
-        request.addHeader("Accept", "application/xhtml+xml");
+        request.addHeader("Accept", "application/xml");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuthStr));
         byte[] body = null;
         try {
@@ -346,6 +353,30 @@ public class OSTIElinkService {
                 }
             }
         }
+        return value;
+    }
+    
+    /**
+     * Get the value of the given attribute on first element of the given element.
+     * If we can't find it, null will be returned.
+     * @param doc  the DOM tree model will be looked
+     * @param elementName  the name of the element
+     * @param attributeName  the name of the attribute
+     * @return the value of the attribute
+     */
+    private String getAttributeValue(Document doc, String elementName, String attributeName) {
+        String value = null;
+        if (doc != null && elementName != null && !elementName.trim().equals("") && 
+                            attributeName != null && !attributeName.trim().equals("")) {
+            NodeList nodes = doc.getElementsByTagName(elementName);
+            if (nodes.getLength() > 0) {
+                Node node = nodes.item(0);
+                Element e = (Element)node;
+                value = e.getAttribute(attributeName);
+            }
+        }
+        log.debug("OSTIElinkService.getAttributeValue - the value of the attribute " + attributeName + 
+                                                       " on the element " + elementName + " is " + value);
         return value;
     }
 
