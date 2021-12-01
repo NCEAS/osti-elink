@@ -126,7 +126,8 @@ public class OSTIElinkService {
     }
     
     /**
-     * Get the metadata associated with the given identifier, which should be a doi.
+     * Get the metadata associated with the given identifier, which should be a doi. An OSTIElinkNotFoundException
+     * will be thrown if the identifier can't be found.
      * @param doi  the identifier for which the metadata should be returned
      * @return  the metadata in the xml format
      * @throws OSTIElinkException 
@@ -136,7 +137,8 @@ public class OSTIElinkService {
     }
     
     /**
-     * Get the metadata associated with the osti id
+     * Get the metadata associated with the osti id. An OSTIElinkNotFoundException
+     * will be thrown if the identifier can't be found.
      * @param ostiId  the osti id for which the metadata should be returned
      * @return  the metadata in the xml format
      * @throws OSTIElinkException
@@ -146,7 +148,8 @@ public class OSTIElinkService {
     }
     
     /**
-     * Get the metadata associated with the given identifier.
+     * Get the metadata associated with the given identifier. An OSTIElinkNotFoundException
+     * will be thrown if the identifier can't be found.
      * @param identifier  the identifier for which the metadata should be returned
      * @param  type  the type of the identifier, which can be doi or OSTIId
      * @return  the metadata in the xml format
@@ -198,12 +201,59 @@ public class OSTIElinkService {
      * @throws OSTIElinkException 
      */
     public void setMetadata(String doi, String doiPrefix, String metadataXML) throws OSTIElinkException {
-        String ostiId = getOstiId(doi, doiPrefix);
+        String ostiId = getOstiId(doi, doiPrefix);// if the doi can't be found, an exception will be thrown.
+        String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
+        System.out.println("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
+                            " for the doi identifier " + doi + " is:\n" + newMetadataXML);
+        byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
+        log.debug("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
+        Document doc = generateDOM(reponse);
+        String status = getElementValue(doc, STATUS);
+        if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
+            throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
+        }
     }
     
-    private String addOstiIdToXMLMetadata(String ostiId, String metadataXML) {
-        String newMetadataXML = null;
-        return newMetadataXML;
+    /**
+     * Add the osti id element to the metadata as the first child if the metadata doesn't have one;otherwise, it will
+     * replace with the new value
+     * @param ostiId  the value of the ostiId element will be added or replaced
+     * @param metadataXML  the metadata xml which will be modified
+     * @return the xml string presentation of the new metadata document with the given osti id
+     * @throws OSTIElinkException
+     */
+    private String addOrReplaceOstiIdToXMLMetadata(String ostiId, String metadataXML) throws OSTIElinkException {
+        if (metadataXML == null || metadataXML.trim().equals("")) {
+            throw new OSTIElinkException("OSTIElinkService.setMetadata - the metadata part mustn't be null or blank.");
+        }
+        Document doc = generateDOM(metadataXML.getBytes());
+        NodeList osti_id_nodes = doc.getElementsByTagName("osti_id");
+        if (osti_id_nodes.getLength() == 0) {
+            //it doesn't have an osti id, we need to append one
+            NodeList records = doc.getElementsByTagName("record");
+            if (records.getLength() !=1 ) {
+                throw new OSTIElinkException("DOIService.addOrReplaceOstiIdToXMLMetadata - the metadata must only one record.");
+            } else {
+                Node record = records.item(0);
+                Text newText = doc.createTextNode(ostiId);
+                record.insertBefore(newText, record.getFirstChild());
+            }
+        } else if (osti_id_nodes.getLength() == 1) {
+            //The osti id already exists, we need to replace it.
+            Node osti_id_node = osti_id_nodes.item(0);
+            NodeList children = osti_id_node.getChildNodes();
+            for (int i=0; i<children.getLength(); i++) {
+                Node child = children.item(i);
+                if (child.getNodeType() == Node.TEXT_NODE) {
+                    Text newText = doc.createTextNode(ostiId);
+                    child.getParentNode().replaceChild(newText, child);
+                    break;
+                }
+            }
+        } else {
+            throw new OSTIElinkException("DOIService.addOrReplaceOstiIdToXMLMetadata - the metadata shouldn't have more than one osti id.");
+        }
+        return serialize(doc);
     }
     
     /**
@@ -319,9 +369,7 @@ public class OSTIElinkService {
             //we need to change back to the original code.
             modifySiteCode(originalDefaultSiteCode);
         }
-        DOMImplementationLS domImplementation = (DOMImplementationLS) minimalMetadataDoc.getImplementation();
-        LSSerializer lsSerializer = domImplementation.createLSSerializer();
-        metadataStr = lsSerializer.writeToString(minimalMetadataDoc);
+        metadataStr = serialize(minimalMetadataDoc);
         return metadataStr;
     }
     
@@ -421,7 +469,7 @@ public class OSTIElinkService {
      * @throws SAXException
      * @throws IOException
      */
-    private Document generateDOM(byte[] bytes) throws OSTIElinkException{
+    private static Document generateDOM(byte[] bytes) throws OSTIElinkException{
         Document doc = null;
         try {
             ByteArrayInputStream is = new ByteArrayInputStream(bytes);
@@ -487,6 +535,17 @@ public class OSTIElinkService {
         log.debug("OSTIElinkService.getAttributeValue - the value of the attribute " + attributeName + 
                                                        " on the element " + elementName + " is " + value);
         return value;
+    }
+    
+    /**
+     * Serialize the document object to a string
+     * @param doc  the dom model which need be serialized
+     * @return  the string representation of the dom model
+     */
+    static String serialize(Document doc) {
+        DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
+        LSSerializer lsSerializer = domImplementation.createLSSerializer();
+        return lsSerializer.writeToString(doc);
     }
 
 }
