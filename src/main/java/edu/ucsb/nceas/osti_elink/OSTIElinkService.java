@@ -80,6 +80,8 @@ public class OSTIElinkService {
     private CloseableHttpClient httpClient = null;
     private  byte[] encodedAuthStr = null;
     private Document minimalMetadataDoc = null;
+    private String originalDefaultSiteCode = null;
+    private String currentDefaultSiteCode = "test";
     protected static Log log = LogFactory.getLog(OSTIElinkService.class);
     
     /**
@@ -193,9 +195,15 @@ public class OSTIElinkService {
      * @param doiPrefix  a shortcut to determine if we can get OSTI_id (replace the query) by string comparing. The
      * safest way is pass null there (but it costs a query to the service).
      * @param metadataXML  the new metadata in xml format
+     * @throws OSTIElinkException 
      */
-    public void setMetadata(String doi, String doiPrefix, String metadataXML) {
-        
+    public void setMetadata(String doi, String doiPrefix, String metadataXML) throws OSTIElinkException {
+        String ostiId = getOstiId(doi, doiPrefix);
+    }
+    
+    private String addOstiIdToXMLMetadata(String ostiId, String metadataXML) {
+        String newMetadataXML = null;
+        return newMetadataXML;
     }
     
     /**
@@ -285,22 +293,45 @@ public class OSTIElinkService {
     String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
         String metadataStr = null;
         if (minimalMetadataDoc == null) {
-            InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFile);
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFile)) {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder;
-            try {
-                dBuilder = dbFactory.newDocumentBuilder();
-                minimalMetadataDoc = dBuilder.parse(is);
-            } catch (ParserConfigurationException e) {
-                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
-            } catch (SAXException e) {
-                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
-            } catch (IOException e) {
-                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+                try {
+                    dBuilder = dbFactory.newDocumentBuilder();
+                    minimalMetadataDoc = dBuilder.parse(is);
+                    originalDefaultSiteCode = getElementValue(minimalMetadataDoc, "site_input_code");
+                    log.debug("DOIService.buildMinimalMetadata - the original site code in the minimal metadata is " + originalDefaultSiteCode);
+                } catch (ParserConfigurationException e) {
+                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+                } catch (SAXException e) {
+                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+                } catch (IOException e) {
+                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+                }
+            } catch (IOException ee) {
+                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error to read the file: " + ee.getMessage());
             }
-            
         }
         if (siteCode != null && !siteCode.trim().equals("")) {
+            modifySiteCode(siteCode);
+        } else if (!originalDefaultSiteCode.equals(currentDefaultSiteCode)) {
+            //now the user ask the default site code. But the site map value has been updated by another call.
+            //we need to change back to the original code.
+            modifySiteCode(originalDefaultSiteCode);
+        }
+        DOMImplementationLS domImplementation = (DOMImplementationLS) minimalMetadataDoc.getImplementation();
+        LSSerializer lsSerializer = domImplementation.createLSSerializer();
+        metadataStr = lsSerializer.writeToString(minimalMetadataDoc);
+        return metadataStr;
+    }
+    
+    /**
+     * Modify the value of the site code element to the given value
+     * @param siteCode  the value will be assigned as the new value
+     * @throws OSTIElinkException
+     */
+    private void modifySiteCode(String siteCode) throws OSTIElinkException {
+        synchronized (minimalMetadataDoc) {
             NodeList nodes = minimalMetadataDoc.getElementsByTagName("site_input_code");
             if (nodes.getLength() > 0) {
                 //Only change the first one
@@ -311,6 +342,7 @@ public class OSTIElinkService {
                     if (child.getNodeType() == Node.TEXT_NODE) {
                         Text newText = minimalMetadataDoc.createTextNode(siteCode);
                         child.getParentNode().replaceChild(newText, child);
+                        currentDefaultSiteCode = siteCode;
                         break;
                     }
                 }
@@ -318,10 +350,6 @@ public class OSTIElinkService {
                 throw new OSTIElinkException("DOIService.buildMinimalMetadata - the minimal metadata should have the site_input_code element.");
             }
         }
-        DOMImplementationLS domImplementation = (DOMImplementationLS) minimalMetadataDoc.getImplementation();
-        LSSerializer lsSerializer = domImplementation.createLSSerializer();
-        metadataStr = lsSerializer.writeToString(minimalMetadataDoc);
-        return metadataStr;
     }
     
     /**
