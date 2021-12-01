@@ -124,20 +124,40 @@ public class OSTIElinkService {
     }
     
     /**
-     * Get the metadata associated with the given identifier
+     * Get the metadata associated with the given identifier, which should be a doi.
      * @param doi  the identifier for which the metadata should be returned
      * @return  the metadata in the xml format
      * @throws OSTIElinkException 
      */
     public String getMetadata(String doi) throws OSTIElinkException {
+        return getMetadata(doi, DOI);
+    }
+    
+    /**
+     * Get the metadata associated with the osti id
+     * @param ostiId  the osti id for which the metadata should be returned
+     * @return  the metadata in the xml format
+     * @throws OSTIElinkException
+     */
+    String getMetadataFromOstiId(String ostiId) throws OSTIElinkException {
+        return getMetadata(ostiId, "osti_id");
+    }
+    
+    /**
+     * Get the metadata associated with the given identifier.
+     * @param identifier  the identifier for which the metadata should be returned
+     * @param  type  the type of the identifier, which can be doi or OSTIId
+     * @return  the metadata in the xml format
+     * @throws OSTIElinkException 
+     */
+    private String getMetadata(String identifier, String type) throws OSTIElinkException {
         String metadata = null;
-       
-        if (doi!= null && !doi.trim().equals("")) {
+        if (identifier != null && !identifier.trim().equals("")) {
             //we need to remove the doi prefix
-            doi = removeDOI(doi);
+            identifier = removeDOI(identifier);
             String url = null;
             try {
-                url = baseURL + "?" + DOI + "=" + URLEncoder.encode(doi, StandardCharsets.UTF_8.toString());
+                url = baseURL + "?" + type + "=" + URLEncoder.encode(identifier, StandardCharsets.UTF_8.toString());
             } catch (UnsupportedEncodingException e) {
                 throw new OSTIElinkException("OSTIElinkService.getMetadata - couldn't encode the query url: " + e.getMessage());
             }
@@ -146,12 +166,14 @@ public class OSTIElinkService {
             metadata = new String(response);
             log.debug("OSTIElinkService.getMetadata - the reponse is " + metadata);
             if (metadata == null || metadata.trim().equals("")) {
-                throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the doi " + doi);
-            } else if (!metadata.contains(doi)) {
+                throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the identifier " + 
+                                                      identifier + ", which type is " + type);
+            } else if (!metadata.contains(identifier)) {
                 Document doc = generateDOM(response);
                 String numFound = getAttributeValue(doc, "records", "numfound");
                 if (numFound.equals("0")) {
-                    throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - OSTI can't find the doi " + doi + " since " + metadata);
+                    throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - OSTI can't find the identifier " + 
+                                                            identifier + ", which type is " + type + " since " + metadata);
                 } else {
                     throw new OSTIElinkException(metadata);
                 }
