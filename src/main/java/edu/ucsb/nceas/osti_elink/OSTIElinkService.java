@@ -131,12 +131,10 @@ public class OSTIElinkService {
      */
     public String getMetadata(String doi) throws OSTIElinkException {
         String metadata = null;
-        String doiPrefix = DOI + ":";
+       
         if (doi!= null && !doi.trim().equals("")) {
             //we need to remove the doi prefix
-            if (doi.startsWith(doiPrefix)) {
-                doi = doi.substring(doi.indexOf(doiPrefix) + doiPrefix.length());
-            }
+            doi = removeDOI(doi);
             String url = null;
             try {
                 url = baseURL + "?" + DOI + "=" + URLEncoder.encode(doi, StandardCharsets.UTF_8.toString());
@@ -305,6 +303,67 @@ public class OSTIElinkService {
     }
     
     /**
+     * If a identifier starts with "doi:", this method will remove "doi:".
+     * Otherwise it will return the original one back
+     * @param identifier  the identifier which will be removed "doi:" if it has one
+     * @return  the string with the "doi:" part if it has; otherwise return the identifier itself
+     */
+    static String removeDOI(String identifier) {
+        log.debug("OSTIElinkService.removeDOI - the origial identifier is " + identifier);
+        String doiPrefix = DOI + ":";
+        if (identifier!= null) {
+            //we need to remove the doi prefix
+            if (identifier.startsWith(doiPrefix)) {
+                identifier = identifier.substring(identifier.indexOf(doiPrefix) + doiPrefix.length());
+            }
+        }
+        log.debug("OSTIElinkService.removeDOI - the identifier after removing doi is " + identifier);
+        return identifier;
+    }
+    
+    /**
+     * Figure out the osti id for the given doi. If the doi prefix is null, we will figure it out
+     * by querying the service; otherwise, we will use string comparing to get the last part of doi 
+     * as the osti id. For example, if the doi is 10.15485/1523924 and prefix is doi:10.15485, we will
+     * think 1523924 is the osti id. If you are not sure the pattern is correct, just pass null as the 
+     * prefix, which is safer.
+     * @param doi  the doi associates with the osti id. It can contain "doi:" or not.
+     * @param prefix  the prefix will used to figure out osti id by string comparing. It can contain "doi:" or not. It is safer to pass it as null.
+     * @return the osti id associates with the doi
+     * @throws OSTIElinkException
+     */
+    String getOstiId(String doi, String prefix) throws OSTIElinkException {
+        String ostiId = null;
+        if (doi == null || doi.trim().equals("")) {
+            throw new OSTIElinkException("DOIService.getOstiId - the given doi shouldn't be null or blank when it figures out the OSTI id for a DOI.");
+        }
+        if (prefix != null && !prefix.trim().equals("")) {
+            //This is a short cut. We will figure out the osti id from the doi itself.
+            //the last part (1523924) is the OSTI id for 10.15485/1523924
+            prefix = removeDOI(prefix);
+            doi = removeDOI(doi);
+            if (doi.contains(prefix)) {
+                if (!prefix.endsWith("/")) {
+                    prefix = prefix + "/";
+                }
+                ostiId = doi.substring(doi.indexOf(prefix) + prefix.length());
+                log.debug("OSTIElinkService.getOstiId - tried to use prefix " + prefix + " to get the osti id " + ostiId +
+                        " from the doi identifier " + doi + " without querying the services");
+            }
+        }
+        if ( ostiId == null || ostiId.trim().equals("")) {
+            //we can't get the osti id from doi itself. We have to query the service.
+           String metadata = getMetadata(doi);
+           Document doc = generateDOM(metadata.getBytes());
+           ostiId = getElementValue(doc, "osti_id");
+           log.debug("OSTIElinkService.getOstiId - tried to query the service to get the osti id " + ostiId +
+                   " from the doi idetnifier " + doi);
+        }
+        log.debug("OSTIElinkService.getOstiId - the osti id of the doi identifier " + doi + " is " + ostiId);
+        return ostiId;
+    }
+    
+    /**
      * Generate a dom document for the given byte array
      * @param bytes  the content will be used for the dom document
      * @return  the generated dom document
@@ -346,7 +405,7 @@ public class OSTIElinkService {
                 for (int i=0; i<children.getLength(); i++) {
                     Node child = children.item(i);
                     if (child.getNodeType() == Node.TEXT_NODE) {
-                        value = child.getNodeValue();
+                        value = child.getNodeValue().trim();
                         log.debug("OSTIElinkService.getElementValue - the value of the element " + elementName + " is " + value);
                         break;
                     }
@@ -372,7 +431,7 @@ public class OSTIElinkService {
             if (nodes.getLength() > 0) {
                 Node node = nodes.item(0);
                 Element e = (Element)node;
-                value = e.getAttribute(attributeName);
+                value = e.getAttribute(attributeName).trim();
             }
         }
         log.debug("OSTIElinkService.getAttributeValue - the value of the attribute " + attributeName + 
