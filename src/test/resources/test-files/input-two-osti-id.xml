@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<records>
+  <record>
+    <site_url>https://data.ess-dive.lbl.gov/view/doi:10.15485/1829502</site_url>
+    <osti_id>1523918</osti_id>
+    <osti_id>1523919</osti_id>
+    <title>2 - Data from Raczka et al., Interactions between microbial diversity and substrate chemistry determine the fate of carbon in soil, from Elizabeth Woods in Morgantown, West Virginia, USA</title>
+    <contract_nos>SC0019472</contract_nos>
+    <non-doe_contract_nos/>
+    <originating_research_org>Quantitative, trait-based microbial ecology to accurately model the impacts of nitrogen deposition on soil carbon cycling in the Anthropocene</originating_research_org>
+    <description>File types include: Soil respiration as 13C cumulative respiration from soil incubation experiment, qSIP (quantitative stable isotope probing) data that is "18S apes wide" which is the fungal atom percent excess or how much the fungi took up of the labeled litter and "16S apes wide" which is the bacterial atom percent excess or how much the bacteria took up of the labeled litter, metabolomic data from the incubated soil samples called "Metab Soil Unique Filtered", which is the metabolomic data that had an initial filter from the raw data, and lipidomic data from the incubated soil samples called "All lipids soil".  These files were used according to methods in Raczka et al. 2021 Scientific Reports.  Headers show soil type (Oak, Poplar) and litter type (also called substrate here, which is labeled as no litter (control), poplar, and oak).  This research was done to understand interactions between ecosystem-level processes and microbial diversity that impacts the composition of decomposition products that can form stable soil organic matter.</description>
+    <sponsor_org>U.S. DOE &gt; Office of Science &gt; Basic Energy Sciences (BES)</sponsor_org>
+    <related_resource/>
+    <dataset_type>SM</dataset_type>
+    <publication_date>2021</publication_date>
+    <contact_name>Nanette Raczka</contact_name>
+    <contact_email>ncr0008@mix.wvu.edu</contact_email>
+    <site_input_code>ESS-DIVE</site_input_code>
+    <doi_infix/>
+    <subject_categories_code>54 ENVIRONMENTAL SCIENCES</subject_categories_code>
+    <language>English</language>
+    <country>US</country>
+    <creatorsblock>
+      <creators_detail>
+        <first_name>Nanette</first_name>
+        <last_name>Raczka</last_name>
+        <private_email>ncr0008@mix.wvu.edu</private_email>
+        <orcid_id>https://orcid.org/0000-0002-2576-0773</orcid_id>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Juan</first_name>
+        <last_name>Pineiro</last_name>
+        <private_email>jpineiron@gmail.com</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Malak</first_name>
+        <last_name>Tfaily</last_name>
+        <private_email>tfaily@arizona.edu</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Rosalie</first_name>
+        <last_name>Chu</last_name>
+        <private_email>Rosalie.Chu@pnnl.gov</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Mary</first_name>
+        <last_name>Lipton</last_name>
+        <private_email>Mary.Lipton@pnnl.gov</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Ljiljana</first_name>
+        <last_name>Pasa-Tolic</last_name>
+        <private_email>Ljiljana.PasaTolic@pnnl.gov</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Ember</first_name>
+        <last_name>Morrissey</last_name>
+        <private_email>ember.morrissey@mail.wvu.edu</private_email>
+      </creators_detail>
+      <creators_detail>
+        <first_name>Edward</first_name>
+        <last_name>Brzostek</last_name>
+        <private_email>erbrzostek@mix.wvu.edu</private_email>
+      </creators_detail>
+    </creatorsblock>
+    <keywords>EARTH SCIENCE &gt; BIOSPHERE &gt; ECOLOGICAL DYNAMICS; EARTH SCIENCE &gt; BIOSPHERE &gt; ECOSYSTEMS; EARTH SCIENCE &gt; LAND SURFACE &gt; SOILS; EARTH SCIENCE &gt; BIOSPHERE &gt; ECOLOGICAL DYNAMICS &gt; ECOSYSTEM FUNCTIONS &gt; DECOMPOSITION</keywords>
+    <related_resource>Raczka NC, Piñeiro J, Tfaily MM, Chu RK, Lipton MS, Pasa-Tolic L, Morrissey E, &amp; Brzostek ER. 2021. Interactions between microbial diversity and substrate chemistry determine the fate of carbon in soil. Sci Rep 11,19320.    DOI: 10.1038/s41598-021-97942-9</related_resource>
+  </record>
+</records>

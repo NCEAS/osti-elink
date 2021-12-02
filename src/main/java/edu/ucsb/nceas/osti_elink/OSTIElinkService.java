@@ -203,7 +203,7 @@ public class OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataXML) throws OSTIElinkException {
         String ostiId = getOstiId(doi, doiPrefix);// if the doi can't be found, an exception will be thrown.
         String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
-        System.out.println("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
+        log.debug("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
         byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
         log.debug("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
@@ -235,8 +235,10 @@ public class OSTIElinkService {
                 throw new OSTIElinkException("DOIService.addOrReplaceOstiIdToXMLMetadata - the metadata must only one record.");
             } else {
                 Node record = records.item(0);
+                Node ostiNode = doc.createElement("osti_id");
                 Text newText = doc.createTextNode(ostiId);
-                record.insertBefore(newText, record.getFirstChild());
+                ostiNode.appendChild(newText);
+                record.insertBefore(ostiNode, record.getFirstChild());
             }
         } else if (osti_id_nodes.getLength() == 1) {
             //The osti id already exists, we need to replace it.

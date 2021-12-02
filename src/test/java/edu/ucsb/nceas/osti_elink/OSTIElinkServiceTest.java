@@ -26,7 +26,12 @@ import org.junit.Ignore;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -303,6 +308,71 @@ public class OSTIElinkServiceTest {
         doi = "doi:10.15485/1523924";
         ostiId = ostiService.getOstiId(doi, prefix);
         assertTrue(ostiId.equals("1523924"));
+    }
+    
+    /**
+     * Test the setMetadata method
+     * @throws Exception
+     */
+    @Test
+    public void testSetMetadata() throws Exception {
+        String identifier = ostiService.mintIdentifier(null);
+        assertTrue(identifier.startsWith("doi:10."));
+        identifier = ostiService.removeDOI(identifier);
+        //System.out.println("the doi identifier is " + identifier);
+        String metadata = ostiService.getMetadata(identifier);
+        assertTrue(metadata.contains(identifier));
+        assertTrue(metadata.contains("<title>unkown</title>"));
+        
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
+            String newMetadata = toString(is);
+            //System.out.println("the new metadata is " + newMetadata);
+            try {
+                ostiService.setMetadata(identifier, null, newMetadata);
+                fail("Test can't reach here");
+            } catch (Exception e) {
+                //e.printStackTrace();
+                assertTrue(e instanceof OSTIElinkException);
+            }
+            metadata = ostiService.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertTrue(metadata.contains("<title>unkown</title>"));
+        }
+        
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
+            String newMetadata = toString(is);
+            ostiService.setMetadata(identifier, null, newMetadata);
+            metadata = ostiService.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));
+        }
+        
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
+            String newMetadata = toString(is);
+            ostiService.setMetadata(identifier, null, newMetadata);
+            metadata = ostiService.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertTrue(metadata.contains("<title>1 - Data from Raczka et al., Interactions between"));
+        }
+       
+    }
+    
+    /**
+     * Read a input stream object to a string
+     * @param inputStream  the source of input
+     * @return the string presentation of the input stream
+     * @throws Exception
+     */
+    private String toString(InputStream inputStream) throws Exception {
+        int bufferSize = 1024;
+        char[] buffer = new char[bufferSize];
+        StringBuilder textBuilder = new StringBuilder();
+        try (Reader reader = new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name()))) {
+            for (int numRead; (numRead = reader.read(buffer, 0, buffer.length)) > 0; ) {
+                textBuilder.append(buffer, 0, numRead);
+            }
+        }
+        return textBuilder.toString();
     }
 
 }
