@@ -143,7 +143,7 @@ public class OSTIElinkService {
      * @return  the metadata in the xml format
      * @throws OSTIElinkException
      */
-    String getMetadataFromOstiId(String ostiId) throws OSTIElinkException {
+    protected String getMetadataFromOstiId(String ostiId) throws OSTIElinkException {
         return getMetadata(ostiId, "osti_id");
     }
     
@@ -342,7 +342,7 @@ public class OSTIElinkService {
      * @throws SAXException 
      * @throws OSTIElinkException 
      */
-    String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
+    protected String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
         String metadataStr = null;
         if (minimalMetadataDoc == null) {
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFile)) {
@@ -408,7 +408,7 @@ public class OSTIElinkService {
      * @param identifier  the identifier which will be removed "doi:" if it has one
      * @return  the string with the "doi:" part if it has; otherwise return the identifier itself
      */
-    static String removeDOI(String identifier) {
+    protected static String removeDOI(String identifier) {
         log.debug("OSTIElinkService.removeDOI - the origial identifier is " + identifier);
         String doiPrefix = DOI + ":";
         if (identifier!= null) {
@@ -432,7 +432,7 @@ public class OSTIElinkService {
      * @return the osti id associates with the doi
      * @throws OSTIElinkException
      */
-    String getOstiId(String doi, String prefix) throws OSTIElinkException {
+    protected String getOstiId(String doi, String prefix) throws OSTIElinkException {
         String ostiId = null;
         if (doi == null || doi.trim().equals("")) {
             throw new OSTIElinkException("DOIService.getOstiId - the given doi shouldn't be null or blank when it figures out the OSTI id for a DOI.");
@@ -544,7 +544,7 @@ public class OSTIElinkService {
      * @param doc  the dom model which need be serialized
      * @return  the string representation of the dom model
      */
-    static String serialize(Document doc) {
+    protected static String serialize(Document doc) {
         DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
         LSSerializer lsSerializer = domImplementation.createLSSerializer();
         return lsSerializer.writeToString(doc);
