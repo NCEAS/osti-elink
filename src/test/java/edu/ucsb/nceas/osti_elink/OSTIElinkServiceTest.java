@@ -26,7 +26,6 @@ import org.junit.Ignore;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -363,7 +362,7 @@ public class OSTIElinkServiceTest {
      * @return the string presentation of the input stream
      * @throws Exception
      */
-    private String toString(InputStream inputStream) throws Exception {
+    protected static String toString(InputStream inputStream) throws Exception {
         int bufferSize = 1024;
         char[] buffer = new char[bufferSize];
         StringBuilder textBuilder = new StringBuilder();
