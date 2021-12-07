@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 public class OSTIElinkClient {
     private String USERNAME = "";
     private String PASSWORD = "";
+    private OSTIElinkErrorAgent errorAgent = null;
     private OSTIElinkService service = null;
     private ExecutorService executor = null;
 
@@ -45,9 +46,13 @@ public class OSTIElinkClient {
      * @param username  the user name of an OSTIElink account
      * @param password  the password of the OSTIElink account
      * @param baseURL  the base url of the OSTIElink service
+     * @param errorAgent  the class used to send error message to administers. It can be null.
+     *                    If it is null, the error messages will only be logged in the error level.
+     * 
      */
-    public OSTIElinkClient(String username, String password, String baseURL) {
-        service = new OSTIElinkService(username, password, baseURL);
+    public OSTIElinkClient(String username, String password, String baseURL, OSTIElinkErrorAgent errorAgent) {
+        this.service = new OSTIElinkService(username, password, baseURL);
+        this.errorAgent = errorAgent;
         startExecutorLoop();
     }
     
@@ -58,7 +63,8 @@ public class OSTIElinkClient {
      * @param metadata  the new metadata which will be used
      */
     public void setMetadata(String identifier, String metadata) throws InterruptedException {
-        OSTIElinkServiceRequest request = new OSTIElinkServiceRequest(service, OSTIElinkServiceRequest.SETMETADATA, identifier, metadata);
+        OSTIElinkServiceRequest request =
+                new OSTIElinkServiceRequest(service, OSTIElinkServiceRequest.SETMETADATA, identifier, errorAgent, metadata);
         executor.execute(request);
     }
     

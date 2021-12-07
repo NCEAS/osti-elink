@@ -35,6 +35,7 @@ public class OSTIElinkServiceRequest implements Runnable {
     public static final int SETMETADATA = 1;
     
     private OSTIElinkService service = null;
+    private OSTIElinkErrorAgent errorAgent = null;
     private int method = 0;
     private String identifier = null;
     private String metadata = null;
@@ -46,8 +47,10 @@ public class OSTIElinkServiceRequest implements Runnable {
      * @param service  the OSTIElinkService object will run the request
      * @param method  the method which the request will handle
      * @param identifier  the identifier associated with request
+     * @param errorAgent  the class used to send error message to administers. It can be null.
+     *                    If it is null, the error messages will only be logged in the error level.
      */
-    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier) {
+    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier, OSTIElinkErrorAgent errorAgent) {
         if (service == null) {
             throw new IllegalArgumentException("EZIDService argument must not be null.");
         }
@@ -60,6 +63,7 @@ public class OSTIElinkServiceRequest implements Runnable {
         this.service = service;
         this.method = method;
         this.identifier = identifier;
+        this.errorAgent = errorAgent;
     }
     
     /**
@@ -67,10 +71,12 @@ public class OSTIElinkServiceRequest implements Runnable {
      * @param service  the OSTIElinkService object will run the request
      * @param method  the method which the request will handle
      * @param identifier  the identifier associated with the request
+     * @param errorAgent  the class used to send error message to administers. It can be null.
+     *                    If it is null, the error messages will only be logged in the error level.
      * @param metadata  the metadata associated with the request
      */
-    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier, String metadata) {
-        this(service, method, identifier);
+    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier, OSTIElinkErrorAgent errorAgent, String metadata) {
+        this(service, method, identifier, errorAgent);
         this.metadata = metadata;
     }
     
@@ -89,6 +95,9 @@ public class OSTIElinkServiceRequest implements Runnable {
             }
         } catch (Exception e) {
             log.error("OSTIElinkServiceRequest - Failed request " + method + " for " + identifier + " since: " + e.getMessage());
+            if (errorAgent != null) {
+                errorAgent.notify(e);
+            }
         }
     }
 }

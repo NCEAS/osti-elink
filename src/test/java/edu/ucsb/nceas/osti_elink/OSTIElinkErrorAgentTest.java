@@ -18,21 +18,26 @@
  */
 package edu.ucsb.nceas.osti_elink;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-public class OSTIElinkClientTest {
+/**
+ * Test if the OSTIElinkErrorAgent can catch exceptions correctly.
+ * We use the simple string implementation class - StringElinkErrorAgent as the example
+ * @author tao
+ *
+ */
+public class OSTIElinkErrorAgentTest {
     private OSTIElinkClient client = null;
-    private OSTIElinkErrorAgent agent = null;
+    private StringElinkErrorAgent agent = null;
     private static String username = "";
     private static String password = "";
     
@@ -49,39 +54,16 @@ public class OSTIElinkClientTest {
             password = prop.getProperty("password");
             //System.out.println("the user name is " + username + " and password is " + password);
         }
+        agent = new StringElinkErrorAgent();
         client = new OSTIElinkClient(username, password, BASEURL, agent);
     }
     
-    @After
-    public void tearDown() {
-        client.shutdown();
-        //System.out.println("shut down.");
-    } 
-    
     /**
-     * Test the mintIdentifier method
+     * Test the notify method
      * @throws Exception
      */
     @Test
-    public void testMintIdentifier() throws Exception {
-        String doi = client.mintIdentifier(null);
-        assertTrue(doi.startsWith("doi:"));
-        doi = client.mintIdentifier("ESS-DIVE");
-        assertTrue(doi.startsWith("doi:"));
-        try {
-            doi = client.mintIdentifier("KNB");
-            fail("test shouldn't get here");
-        } catch (Exception e) {
-            assertTrue(e instanceof OSTIElinkException);
-        }
-    }
-    
-    /**
-     * Test the mintIdentifier method
-     * @throws Exception
-     */
-    @Test
-    public void testSetAndGetMetadata() throws Exception {
+    public void testNotify() throws Exception {
         String identifier = client.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
         identifier = OSTIElinkService.removeDOI(identifier);
@@ -89,18 +71,8 @@ public class OSTIElinkClientTest {
         String metadata = client.getMetadata(identifier);
         assertTrue(metadata.contains(identifier));
         assertTrue(metadata.contains("<title>unkown</title>"));
-        
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
-            String newMetadata = OSTIElinkServiceTest.toString(is);
-            //System.out.println("the new metadata is " + newMetadata);
-            //even though this request should fail in the server side, this test
-            //still succeed since it is running on another thread.
-            client.setMetadata(identifier,newMetadata);
-            Thread.sleep(1000);
-            metadata = client.getMetadata(identifier);
-            assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>unkown</title>"));
-        }
+        //things should work and the error should be blank
+        assertTrue(agent.getError().equals(""));
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
             String newMetadata = OSTIElinkServiceTest.toString(is);
@@ -109,16 +81,42 @@ public class OSTIElinkClientTest {
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));
+            //things should work and the error should be blank
+            assertTrue(agent.getError().equals(""));
         }
         
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
+        //even though this request should fail in the server side, this test
+        //still succeed since it is running on another thread.
+        //however, the error agent should catch the message
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
             String newMetadata = OSTIElinkServiceTest.toString(is);
-            client.setMetadata(identifier, newMetadata);
+            //System.out.println("the new metadata is " + newMetadata);
+            client.setMetadata(identifier,newMetadata);
             Thread.sleep(1000);
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>1 - Data from Raczka et al., Interactions between"));
+            assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));   
         }
+        
+        //even though this request should fail in the server side (the doi doesn't exist), this test
+        //still succeed since it is running on another thread.
+        //however, the error agent should catch the message
+        String uuid = UUID.randomUUID().toString();
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
+            String newMetadata = OSTIElinkServiceTest.toString(is);
+            String doi = "doi:" + uuid;
+            //System.out.println("the doi is " + uuid);
+            client.setMetadata(uuid, newMetadata);
+            Thread.sleep(1000);
+            metadata = client.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));
+        }
+        
+        client.shutdown();
+        //System.out.println("the error message from agent is " + agent.getError());
+        assertTrue(agent.getError().contains("the metadata shouldn't have more than one osti id"));
+        assertTrue(agent.getError().contains(uuid));
     }
 
 }
