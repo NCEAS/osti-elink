@@ -57,7 +57,8 @@ public class OSTIElinkClient {
     }
     
     /**
-     * Set the meta data for a given identifier. The identifier should alreay exist in the elink service.
+     * Set the meta data for a given identifier. The identifier should already exist in the elink service.
+     * The method will run the commands in another thread.
      * We always use the query method to figure out internal OSTI id (not the prefix comparison).
      * @param identifier  the identifier of object which will be set a new metadata
      * @param metadata  the new metadata which will be used
@@ -70,23 +71,41 @@ public class OSTIElinkClient {
     
     /**
      * Ask the elink service to generate a doi for the given siteCode.
+     * The thread blocks until the identifier is returned
      * @param siteCode  the siteCode will be used. If it is null, the default one, ess-dive, will be used.
      * @return  the newly generated doi
      * @throws OSTIElinkException
      */
     public String mintIdentifier(String siteCode) throws OSTIElinkException {
-        String identifier = service.mintIdentifier(siteCode);
+        String identifier = null;
+        try {
+            identifier = service.mintIdentifier(siteCode);
+        } catch (OSTIElinkException e) {
+            if (errorAgent != null) {
+                errorAgent.notify(e);
+            }
+            throw e;
+        }
         return identifier;
     }
     
     /**
-     * Get the associated metadata for the given identifier
+     * Get the associated metadata for the given identifier.
+     * The thread blocks until the identifier is returned
      * @param identifier  for which metadata should be returned
      * @return  the metadata associated with the identifier
      * @throws OSTIElinkException
      */
     public String getMetadata(String identifier) throws OSTIElinkException {
-        String metadata = service.getMetadata(identifier);
+        String metadata = null; 
+        try {
+            metadata = service.getMetadata(identifier);
+        }  catch (OSTIElinkException e) {
+            if (errorAgent != null) {
+                errorAgent.notify(e);
+            }
+            throw e;
+        }
         return metadata;
     }
     
