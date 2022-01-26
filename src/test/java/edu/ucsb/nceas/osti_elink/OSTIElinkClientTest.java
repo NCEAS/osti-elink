@@ -114,7 +114,7 @@ public class OSTIElinkClientTest {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
             String newMetadata = OSTIElinkServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
-            Thread.sleep(1000);
+            Thread.sleep(5000);
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("<title>1 - Data from Raczka et al., Interactions between"));
