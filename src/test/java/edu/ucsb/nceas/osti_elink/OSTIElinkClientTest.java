@@ -89,6 +89,8 @@ public class OSTIElinkClientTest {
         String metadata = client.getMetadata(identifier);
         assertTrue(metadata.contains(identifier));
         assertTrue(metadata.contains("<title>unknown</title>"));
+        String status = client.getStatus(identifier);
+        assertTrue(status.equals("Saved"));
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
             String newMetadata = OSTIElinkServiceTest.toString(is);
@@ -100,6 +102,8 @@ public class OSTIElinkClientTest {
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("<title>unknown</title>"));
+            status = client.getStatus(identifier);
+            assertTrue(status.equals("Saved"));
         }
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
@@ -109,6 +113,8 @@ public class OSTIElinkClientTest {
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));
+            status = client.getStatus(identifier);
+            assertTrue(status.equals("Pending"));
         }
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
@@ -118,6 +124,8 @@ public class OSTIElinkClientTest {
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("<title>1 - Data from Raczka et al., Interactions between"));
+            status = client.getStatus(identifier);
+            assertTrue(status.equals("Pending"));
         }
     }
 

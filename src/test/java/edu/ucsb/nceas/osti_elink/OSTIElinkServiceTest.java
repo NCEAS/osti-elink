@@ -357,6 +357,20 @@ public class OSTIElinkServiceTest {
     }
     
     /**
+     * Test the getStatus method
+     * @throws Exception
+     */
+    @Test
+    public void testGetStatus() throws Exception {
+        String doi = "10.15485/1523924";
+        String status = ostiService.getStatus(doi);
+        assertTrue(status.equals("Pending"));
+        String withDOI = "doi:" + doi;
+        status = ostiService.getStatus(withDOI);
+        assertTrue(status.equals("Pending"));
+    }
+    
+    /**
      * Read a input stream object to a string
      * @param inputStream  the source of input
      * @return the string presentation of the input stream

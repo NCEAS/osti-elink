@@ -127,7 +127,7 @@ public class OSTIElinkService {
     
     /**
      * Get the metadata associated with the given identifier, which should be a doi. An OSTIElinkNotFoundException
-     * will be thrown if the identifier can't be found.
+     * will be thrown if the identifier can't be found. It may contains multiple records.
      * @param doi  the identifier for which the metadata should be returned
      * @return  the metadata in the xml format
      * @throws OSTIElinkException 
@@ -212,6 +212,25 @@ public class OSTIElinkService {
         if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
             throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
         }
+    }
+    
+    /**
+     * Get the status of a DOI. If there are multiple records for a DOI, the status of 
+     * the first one will be returned
+     * @param doi  the doi to identify the record
+     * @return  the status of the doi
+     * @throws OSTIElinkException
+     */
+    public String getStatus(String doi) throws OSTIElinkException {
+        String status = null;
+        String metadata = getMetadata(doi);
+        if (metadata == null) {
+            throw new OSTIElinkException("OSTIElinkService.getStatus - the metadata of the DOI " + doi + " can't be found.");
+        }
+        Document doc = generateDOM(metadata.getBytes());
+        status = getAttributeValue(doc, "record", "status");//get the attribute value of the first element
+        log.debug("OSTIElinkService.getStatus - the status of " + doi + " is " + status);
+        return status;
     }
     
     /**

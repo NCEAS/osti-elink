@@ -97,19 +97,22 @@ public class OSTIElinkClient {
      * @throws OSTIElinkException
      */
     public String getMetadata(String identifier) throws OSTIElinkException {
-        String metadata = null; 
-        try {
-            metadata = service.getMetadata(identifier);
-        }  catch (OSTIElinkException e) {
-            if (errorAgent != null) {
-                errorAgent.notify(e);
-            }
-            throw e;
-        }
-        return metadata;
+        return service.getMetadata(identifier);
     }
     
-
+    
+    /**
+     * Get the status for the given identifier. If there are multiple records 
+     * associate with the identifier, the status of the first one will be returned.
+     * The thread blocks until the status is returned
+     * @param identifier  id to identify whose status should be returned
+     * @return  the metadata associated with the identifier
+     * @throws OSTIElinkException
+     */
+    public String getStatus(String identifier) throws OSTIElinkException {
+        return service.getStatus(identifier);
+    }
+    
     private void startExecutorLoop() {
         // Query the runtime to see how many CPUs are available, and configure that many threads
         Runtime runtime = Runtime.getRuntime();        

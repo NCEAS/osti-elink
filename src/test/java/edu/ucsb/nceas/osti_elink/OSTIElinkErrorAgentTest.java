@@ -121,21 +121,11 @@ public class OSTIElinkErrorAgentTest {
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
         }
-        String uuid2 = UUID.randomUUID().toString();
-        String doi = "doi:" + uuid2;
-        try {
-            String metadata2 = client.getMetadata(doi);
-            fail("Test can't reach here");
-        } catch (Exception e) {
-            assertTrue(e instanceof OSTIElinkException);
-        }
         client.shutdown();
         //System.out.println("the error message from agent is " + agent.getError());
         assertTrue(agent.getError().contains("the metadata shouldn't have more than one osti id"));
         assertTrue(agent.getError().contains(uuid));
         assertTrue(agent.getError().contains(KNB));
-        assertTrue(agent.getError().contains(uuid2));
-        
     }
 
 }
