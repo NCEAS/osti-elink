@@ -88,7 +88,7 @@ public class OSTIElinkClientTest {
         //System.out.println("the doi identifier is " + identifier);
         String metadata = client.getMetadata(identifier);
         assertTrue(metadata.contains(identifier));
-        assertTrue(metadata.contains("<title>unkown</title>"));
+        assertTrue(metadata.contains("<title>unknown</title>"));
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
             String newMetadata = OSTIElinkServiceTest.toString(is);
@@ -99,7 +99,7 @@ public class OSTIElinkClientTest {
             Thread.sleep(1000);
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>unkown</title>"));
+            assertTrue(metadata.contains("<title>unknown</title>"));
         }
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {

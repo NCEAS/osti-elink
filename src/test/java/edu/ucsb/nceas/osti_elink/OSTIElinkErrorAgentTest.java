@@ -71,7 +71,7 @@ public class OSTIElinkErrorAgentTest {
         //System.out.println("the doi identifier is " + identifier);
         String metadata = client.getMetadata(identifier);
         assertTrue(metadata.contains(identifier));
-        assertTrue(metadata.contains("<title>unkown</title>"));
+        assertTrue(metadata.contains("<title>unknown</title>"));
         //things should work and the error should be blank
         assertTrue(agent.getError().equals(""));
         
