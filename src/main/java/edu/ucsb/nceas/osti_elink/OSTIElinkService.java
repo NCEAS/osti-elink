@@ -205,12 +205,19 @@ public class OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataXML) throws OSTIElinkException {
         String ostiId = getOstiId(doi, doiPrefix);// if the doi can't be found, an exception will be thrown.
         String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
-        log.debug("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
+        log.info("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
         byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
         log.debug("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
-        Document doc = generateDOM(reponse);
-        String status = getElementValue(doc, STATUS);
+        Document doc = null;
+        String status = null;
+        try {
+            doc = generateDOM(reponse);
+            status = getElementValue(doc, STATUS);
+        } catch (Exception e) {
+            log.error("OSTIElinkService.setMetadata - can't get the status of the repsonse:\n" + 
+                       new String(reponse) + "since:\n" + e.getLocalizedMessage());
+        }
         if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
             throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
         }
