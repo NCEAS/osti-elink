@@ -27,8 +27,8 @@ public interface OSTIElinkErrorAgent {
 
     /**
      * Send the caught exceptions to the users
-     * @param e  the exception happened during the 
+     * @param error  the error message happened during the 
      * interaction between OSTIElinkClinet and Elink in another thread.
      */
-    public void notify(Exception e);
+    public void notify(String error);
 }

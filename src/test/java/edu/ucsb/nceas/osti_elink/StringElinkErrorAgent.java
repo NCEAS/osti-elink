@@ -28,8 +28,8 @@ public class StringElinkErrorAgent implements OSTIElinkErrorAgent {
     String error = "";
     
     @Override
-    public void notify(Exception e) {
-        error = error + " " + e.getMessage();
+    public void notify(String errorMessage) {
+        error = error + " " + errorMessage;
     }
     
     /**

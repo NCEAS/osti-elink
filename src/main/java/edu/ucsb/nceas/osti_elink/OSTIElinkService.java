@@ -64,6 +64,8 @@ import org.xml.sax.SAXException;
  */
 public class OSTIElinkService {
     public static final String DOI = "doi";
+    public static final String SAVED = "Saved";
+    public static final String PENDING = "Pending";
     
     private static final int GET = 1;
     private static final int PUT = 2;

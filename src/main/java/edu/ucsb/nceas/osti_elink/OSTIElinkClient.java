@@ -82,7 +82,7 @@ public class OSTIElinkClient {
             identifier = service.mintIdentifier(siteCode);
         } catch (OSTIElinkException e) {
             if (errorAgent != null) {
-                errorAgent.notify(e);
+                errorAgent.notify(e.getMessage());
             }
             throw e;
         }

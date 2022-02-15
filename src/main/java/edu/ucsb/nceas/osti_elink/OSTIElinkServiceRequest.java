@@ -94,9 +94,12 @@ public class OSTIElinkServiceRequest implements Runnable {
                     break;
             }
         } catch (Exception e) {
-            log.error("OSTIElinkServiceRequest - Failed request " + method + " for " + identifier + " since: " + e.getMessage());
+            String error = "OSTIElinkServiceRequest.run - the request to OSTI for " + identifier + " failed:\n" + metadata + 
+                           "\n *************************************************************\n The response from OSIT is:\n " + 
+                            e.getMessage();
+            log.error(error);
             if (errorAgent != null) {
-                errorAgent.notify(e);
+                errorAgent.notify(error);
             }
         }
     }
