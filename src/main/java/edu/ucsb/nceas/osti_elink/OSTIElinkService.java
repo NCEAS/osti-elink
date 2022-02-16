@@ -208,7 +208,7 @@ public class OSTIElinkService {
         log.info("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
         byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
-        log.debug("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
+        log.info("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
         Document doc = null;
         String status = null;
         try {
