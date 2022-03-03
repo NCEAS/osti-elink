@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.ucsb.nceas</groupId>
   <artifactId>osti-elink</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>osti-elink</name>
   <description>Wrapper library for managing DOIs through OSTI Elink</description>
   <scm>
