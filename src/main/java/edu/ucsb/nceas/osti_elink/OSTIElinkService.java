@@ -114,8 +114,14 @@ public class OSTIElinkService {
         String identifier = null;
         String minimalMetadata = buildMinimalMetadata(siteCode);
         byte[] reponse = sendRequest(POST, baseURL, minimalMetadata);
-        log.debug("OSTIElinkService.mintIdentifier - the response from the OSTI service is:\n " + new String(reponse));
-        Document doc = generateDOM(reponse);
+        log.info("OSTIElinkService.mintIdentifier - the response from the OSTI service is:\n " + new String(reponse));
+        Document doc = null;
+        try {
+            doc = generateDOM(reponse);
+        } catch (Exception e) {
+            //The response is not a xml string. We return the response as an exception
+            throw new OSTIElinkException("OSTIElinkService.mintIdentifier - Error:  " + new String(reponse));
+        }
         String status = getElementValue(doc, STATUS);
         String id = getElementValue(doc, DOI);
         if (status != null && status.equalsIgnoreCase(SUCCESS) && id != null && !id.trim().equals("")) {
@@ -168,23 +174,33 @@ public class OSTIElinkService {
             } catch (UnsupportedEncodingException e) {
                 throw new OSTIElinkException("OSTIElinkService.getMetadata - couldn't encode the query url: " + e.getMessage());
             }
-            log.debug("OSTIElinkService.getMetadata - the url sending the service is " + url);
+            log.info("OSTIElinkService.getMetadata - the url sending to the service is " + url);
             byte[] response = sendRequest(GET, url);
             metadata = new String(response);
-            log.debug("OSTIElinkService.getMetadata - the reponse is " + metadata);
+            log.info("OSTIElinkService.getMetadata - the reponse for id " + identifier + " is\n " + metadata);
             if (metadata == null || metadata.trim().equals("")) {
                 throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the identifier " + 
                                                       identifier + ", which type is " + type);
             } else if (!metadata.contains(identifier)) {
-                Document doc = generateDOM(response);
+                Document doc = null;
+                try {
+                    doc = generateDOM(response);
+                } catch (Exception e) {
+                    //The response is not a xml document. Just throw the exception
+                    throw new OSTIElinkException("OSTIElinkService.getMetadata - can't get the metadata for id " + 
+                                                  identifier + " since\n " + metadata);
+                }
                 String numFound = getAttributeValue(doc, "records", "numfound");
                 if (numFound.equals("0")) {
                     throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - OSTI can't find the identifier " + 
-                                                            identifier + ", which type is " + type + " since " + metadata);
+                                                            identifier + ", which type is " + type + " since\n " + metadata);
                 } else {
-                    throw new OSTIElinkException(metadata);
+                    throw new OSTIElinkException("OSTIElinkService.getMetadata - can't get the metadata for id " + 
+                                                 identifier + " since\n " + metadata);
                 }
             }
+        } else {
+            throw new OSTIElinkException("OSTIElinkService.getMetadata - the given identifier can't be null or blank.");
         }
         return metadata;
     }
@@ -208,7 +224,8 @@ public class OSTIElinkService {
         log.info("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
         byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
-        log.info("OSTIElinkService.setMetadata - the response from the OSTI service is:\n " + new String(reponse));
+        log.info("OSTIElinkService.setMetadata - the response from the OSTI service to set metadata for id " + doi + 
+                " is:\n " + new String(reponse));
         Document doc = null;
         String status = null;
         try {
@@ -252,9 +269,15 @@ public class OSTIElinkService {
      */
     private String addOrReplaceOstiIdToXMLMetadata(String ostiId, String metadataXML) throws OSTIElinkException {
         if (metadataXML == null || metadataXML.trim().equals("")) {
-            throw new OSTIElinkException("OSTIElinkService.setMetadata - the metadata part mustn't be null or blank.");
+            throw new OSTIElinkException("OSTIElinkService.addOrReplaceOstiIdToXMLMetadata - the metadata part mustn't be null or blank.");
         }
-        Document doc = generateDOM(metadataXML.getBytes());
+        Document doc = null;
+        try {
+            doc = generateDOM(metadataXML.getBytes());
+        } catch (Exception e) {
+            throw new OSTIElinkException("OSTIElinkService.addOrReplaceOstiIdToXMLMetadata - the metadata part must be a valid xml string. But the string is " +
+                                         metadataXML + " And it can't be processed because " + e.getMessage());
+        }
         NodeList osti_id_nodes = doc.getElementsByTagName("osti_id");
         if (osti_id_nodes.getLength() == 0) {
             //it doesn't have an osti id, we need to append one
