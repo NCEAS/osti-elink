@@ -18,9 +18,14 @@
  */
 package edu.ucsb.nceas.osti_elink;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
+import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,6 +46,7 @@ public class OSTIElinkClient {
     private OSTIElinkErrorAgent errorAgent = null;
     private OSTIElinkService service = null;
     private ExecutorService executor = null;
+    private static Properties properties = null;
 
     protected static Log log = LogFactory.getLog(OSTIElinkClient.class);
 
@@ -54,11 +60,40 @@ public class OSTIElinkClient {
      * 
      */
     public OSTIElinkClient(String username, String password, String baseURL, OSTIElinkErrorAgent errorAgent) {
-        this.service = new OSTIElinkService(username, password, baseURL);
+        if (properties == null)  {
+            loadDefaultPropertyFile();
+        }
+        properties.setProperty(USER_NAME_PROPERTY, username);
+        properties.setProperty(PASSWORD_PROPERTY, password);
+        properties.setProperty(BASE_URL_PROPERTY, baseURL);
+        try {
+            service = OSTIServiceFactory.getOSTIElinkService(properties);
+        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported e) {
+            log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
         this.errorAgent = errorAgent;
         startExecutorLoop();
     }
-    
+
+    private void loadDefaultPropertyFile() {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("osti.properties")) {
+            properties = new Properties();
+            properties.load(is);
+        } catch (IOException e) {
+            log.error("Can't load the default property file into properties " + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Set the given properties to the class. This method is for testing only
+     * @param properties1  the properties will be used to create the client.
+     */
+    public static void setProperties(Properties properties1) {
+        properties = properties1;
+    }
+
     /**
      * Set the meta data for a given identifier. The identifier should already exist in the elink service.
      * The method will run the commands in another thread.
