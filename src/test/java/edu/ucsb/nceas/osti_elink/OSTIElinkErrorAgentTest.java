@@ -41,8 +41,7 @@ public class OSTIElinkErrorAgentTest {
     private StringElinkErrorAgent agent = null;
     private static String username = "";
     private static String password = "";
-    
-    public static final String BASEURL = "https://www.osti.gov/elinktest/2416api";
+
     protected static Log log = LogFactory.getLog(OSTIElinkServiceTest.class);
 
 
@@ -56,7 +55,7 @@ public class OSTIElinkErrorAgentTest {
             //System.out.println("the user name is " + username + " and password is " + password);
         }
         agent = new StringElinkErrorAgent();
-        client = new OSTIElinkClient(username, password, BASEURL, agent);
+        client = new OSTIElinkClient(username, password, OSTIElinkServiceTest.BASEURL, agent);
     }
     
     /**
