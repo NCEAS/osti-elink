@@ -11,6 +11,7 @@ import java.util.Properties;
  * @author Tao
  */
 public class OSTIServiceFactory {
+    public static final String OSTISERVICE_CLASS_NAME = "ostiService.className";
 
     /**
      * Get the OSTIElinService instance based on the given properties
@@ -24,7 +25,7 @@ public class OSTIServiceFactory {
         throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
         ClassNotSupported {
         OSTIElinkService service;
-        String className = getProperty("ostiService.className", properties);
+        String className = getProperty(OSTISERVICE_CLASS_NAME, properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
             // v1 service
             String userName = getProperty(OSTIElinkClient.USER_NAME_PROPERTY, properties);
