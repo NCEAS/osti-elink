@@ -1,5 +1,6 @@
 package edu.ucsb.nceas.osti_elink;
 
+import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
 
@@ -17,9 +18,11 @@ public class OSTIServiceFactory {
      * @return an OSTIElinkService instance
      * @throws IllegalArgumentException
      * @throws PropertyNotFound
+     * @throws ClassNotFoundException
      */
     public static OSTIElinkService getOSTIElinkService(Properties properties)
-        throws IllegalArgumentException, PropertyNotFound {
+        throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
+        ClassNotSupported {
         OSTIElinkService service;
         String className = getProperty("ostiService.className", properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
@@ -30,7 +33,7 @@ public class OSTIServiceFactory {
             service = new OSTIService(userName, password, baseURL);
 
         } else {
-            throw new ClassNotFoundException("OSTIService does not find the class " + className);
+            throw new ClassNotSupported("OSTIService does not find the class " + className);
         }
         return service;
     }
