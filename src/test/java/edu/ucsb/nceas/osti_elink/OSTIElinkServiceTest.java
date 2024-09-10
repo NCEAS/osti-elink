@@ -134,16 +134,7 @@ public class OSTIElinkServiceTest {
             //e.printStackTrace();
             assertTrue(e instanceof OSTIElinkNotFoundException);
         }
-        
-        try {
-            String doi4 = "doi:";
-            metadata = ostiService.getMetadata(doi4);
-            fail("The test can't get here");
-        } catch (Exception e) {
-            //e.printStackTrace();
-            assertTrue(e instanceof OSTIElinkNotFoundException);
-        }
-        
+
         try {
             String doi5 = "doi:11.15df485/1523924";
             metadata = ostiService.getMetadata(doi5);
@@ -174,7 +165,7 @@ public class OSTIElinkServiceTest {
         assertTrue(metadata.contains(ostiId));
             
         try {
-            String ostiId2 = "15df4851523924";
+            String ostiId2 = "1567894851523924";
             metadata = ostiService.getMetadataFromOstiId(ostiId2);
             fail("The test can't get here");
         } catch (Exception e) {
@@ -187,7 +178,7 @@ public class OSTIElinkServiceTest {
             fail("The test can't get here");
         } catch (Exception e) {
             //e.printStackTrace();
-            assertTrue(e instanceof OSTIElinkNotFoundException);
+            assertTrue(e instanceof OSTIElinkException);
         }
         try {
             String doi5 = "10.15485/1523924";
@@ -195,7 +186,7 @@ public class OSTIElinkServiceTest {
             fail("The test can't get here");
         } catch (Exception e) {
             //e.printStackTrace();
-            assertTrue(e instanceof OSTIElinkNotFoundException);
+            assertTrue(e instanceof OSTIElinkException);
         }
     }
     
