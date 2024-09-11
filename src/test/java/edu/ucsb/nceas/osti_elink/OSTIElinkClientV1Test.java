@@ -26,11 +26,11 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class OSTIElinkClientTest {
+public class OSTIElinkClientV1Test {
     private OSTIElinkClient client = null;
     private OSTIElinkErrorAgent agent = null;
     private static String username = "";
