@@ -45,8 +45,11 @@ public class OSTIElinkClientTest {
             prop.load(is);
             username = prop.getProperty("username");
             password = prop.getProperty("password");
-            //System.out.println("the user name is " + username + " and password is " + password);
         }
+        Properties className = new Properties();
+        className.setProperty(
+            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+        OSTIElinkClient.setProperties(className);
         client = new OSTIElinkClient(username, password, OSTIElinkServiceTest.BASEURL, agent);
     }
     
