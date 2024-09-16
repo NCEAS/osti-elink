@@ -14,7 +14,8 @@ public class OSTIServiceFactory {
     public static final String OSTISERVICE_CLASS_NAME = "ostiService.className";
 
     /**
-     * Get the OSTIElinService instance based on the given properties
+     * Get the OSTIElinService instance based on the environment variables and given properties.
+     * The environmental variable of ostiService.className overwrites the property in the file.
      * @param properties  the configuration determining the class instances
      * @return an OSTIElinkService instance
      * @throws IllegalArgumentException
@@ -25,7 +26,12 @@ public class OSTIServiceFactory {
         throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
         ClassNotSupported {
         OSTIElinkService service;
-        String className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+        // Get className from the environment variable first. If we can't, read it from the
+        // property file.
+        String className = System.getenv(OSTISERVICE_CLASS_NAME);
+        if (className == null) {
+            className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+        }
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
             // v1 service
             String userName = getProperty(OSTIElinkClient.USER_NAME_PROPERTY, properties);
