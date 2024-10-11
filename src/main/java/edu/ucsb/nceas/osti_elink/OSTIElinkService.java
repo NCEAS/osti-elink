@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -84,6 +85,7 @@ public class OSTIElinkService {
     private Document minimalMetadataDoc = null;
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = "test";
+    protected Properties properties = null;
     protected static Log log = LogFactory.getLog(OSTIElinkService.class);
     
     /**
@@ -599,6 +601,14 @@ public class OSTIElinkService {
         DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
         LSSerializer lsSerializer = domImplementation.createLSSerializer();
         return lsSerializer.writeToString(doc);
+    }
+
+    /**
+     * Set the properties to the service
+     * @param properties the properties associate the service
+     */
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
 }

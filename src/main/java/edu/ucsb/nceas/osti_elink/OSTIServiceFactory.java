@@ -38,7 +38,7 @@ public class OSTIServiceFactory {
             String password = getProperty(OSTIElinkClient.PASSWORD_PROPERTY, properties);
             String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
             service = new OSTIService(userName, password, baseURL);
-
+            service.setProperties(properties);
         } else {
             throw new ClassNotSupported("OSTIService does not find the class " + className);
         }
