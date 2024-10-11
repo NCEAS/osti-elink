@@ -13,20 +13,25 @@
     <url>http://nceas.ucsb.edu</url>
   </organization>
   <dependencies>
-    <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.12</version>
-        <type>jar</type>
-        <scope>compile</scope>
-    </dependency>
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13.1</version>
-        <type>jar</type>
-        <scope>compile</scope>
-    </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.12</version>
+          <type>jar</type>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.1</version>
+          <type>jar</type>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.17.0</version>
+      </dependency>
   </dependencies>
     <build>
         <plugins>
@@ -75,7 +80,7 @@
                         <configuration>
                             <url>${url}</url>
                             <groupId>${project.groupId}</groupId>
-                            <aractId>${project.artifactId}</aractId>
+                            <artifactId>${project.artifactId}</artifactId>
                             <file>${project.build.directory}/${project.build.finalName}.jar</file>
                             <version>${project.version}</version>
                             <generatePom>false</generatePom>
