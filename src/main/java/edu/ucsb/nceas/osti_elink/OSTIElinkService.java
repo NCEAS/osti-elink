@@ -603,12 +603,4 @@ public class OSTIElinkService {
         return lsSerializer.writeToString(doc);
     }
 
-    /**
-     * Set the properties to the service
-     * @param properties the properties associate the service
-     */
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }
-
 }
