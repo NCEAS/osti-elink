@@ -7,7 +7,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.util.Properties;
 
 /**
  * @author Tao
@@ -15,7 +15,7 @@ import java.nio.charset.Charset;
  */
 public class OSTIv2XmlService extends OSTIElinkService {
     public static final String OSTI_TOKEN = "OSTI_TOKEN";
-    private static String token;
+    protected static String token;
 
     /**
      * Constructor
@@ -23,12 +23,25 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @param username the username of the account which can access the OSTI service
      * @param password the password of the account which can access the OSTI service
      * @param baseURL  the url which specifies the location of the OSTI service
+     */
+    public OSTIv2XmlService(String username, String password, String baseURL) {
+        super(username, password, baseURL);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param username the username of the account which can access the OSTI service
+     * @param password the password of the account which can access the OSTI service
+     * @param baseURL  the url which specifies the location of the OSTI service
+     * @param properties  the properties will be used in the OSTI service
      * @throws PropertyNotFound
      * @throws IOException
      */
-    public OSTIv2XmlService(String username, String password, String baseURL)
+    public OSTIv2XmlService(String username, String password, String baseURL, Properties properties)
         throws PropertyNotFound, IOException {
         super(username, password, baseURL);
+        this.properties = properties;
         loadToken();
     }
 
