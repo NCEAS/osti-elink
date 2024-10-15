@@ -1,27 +1,11 @@
-/**
- * This work was created by the National Center for Ecological Analysis and Synthesis
- * at the University of California Santa Barbara (UCSB).
- *
- *   Copyright 2021 Regents of the University of California
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package edu.ucsb.nceas.osti_elink;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -53,6 +37,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
@@ -114,6 +99,8 @@ public abstract class OSTIElinkService {
     public String mintIdentifier(String siteCode) throws OSTIElinkException {
         String identifier = null;
         String minimalMetadata = buildMinimalMetadata(siteCode);
+        log.info("the minmal metadata is " + minimalMetadata);
+        log.info("the base url is " + baseURL);
         byte[] reponse = sendRequest(POST, baseURL, minimalMetadata);
         log.info("OSTIElinkService.mintIdentifier - the response from the OSTI service is:\n " + new String(reponse));
         Document doc = null;
@@ -605,7 +592,12 @@ public abstract class OSTIElinkService {
     protected static String serialize(Document doc) {
         DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
         LSSerializer lsSerializer = domImplementation.createLSSerializer();
-        return lsSerializer.writeToString(doc);
+        LSOutput lsOutput =  domImplementation.createLSOutput();
+        lsOutput.setEncoding("UTF-8");
+        Writer stringWriter = new StringWriter();
+        lsOutput.setCharacterStream(stringWriter);
+        lsSerializer.write(doc, lsOutput);
+        return stringWriter.toString();
     }
 
 }

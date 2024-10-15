@@ -73,7 +73,8 @@ public class OSTIv2XmlService extends OSTIElinkService {
      */
     @Override
     protected void setHeaders(HttpUriRequest request) {
-        request.addHeader("Accept", "application/xml");
+        //request.addHeader("Accept", "application/xml");
+        request.addHeader("Content-Type", "application/xml");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 }

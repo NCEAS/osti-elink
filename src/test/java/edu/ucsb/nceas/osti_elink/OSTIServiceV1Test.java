@@ -67,19 +67,23 @@ public class OSTIServiceV1Test {
     @Test
     public void testBuildMinimalMetadata() throws Exception {
         String result = ostiService.buildMinimalMetadata("KNB");
+        assertTrue(result.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertTrue(result.contains("<set_reserved/>"));
         assertTrue(result.contains("<site_input_code>KNB</site_input_code>"));
         
         //The default one will be ess-dive
         result = ostiService.buildMinimalMetadata(null);
+        assertTrue(result.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertTrue(result.contains("<set_reserved/>"));
         assertTrue(result.contains("<site_input_code>ESS-DIVE</site_input_code>"));
         
         result = ostiService.buildMinimalMetadata("ESS-DIVE");
+        assertTrue(result.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertTrue(result.contains("<set_reserved/>"));
         assertTrue(result.contains("<site_input_code>ESS-DIVE</site_input_code>"));
         
         result = ostiService.buildMinimalMetadata("KNB");
+        assertTrue(result.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertTrue(result.contains("<set_reserved/>"));
         assertTrue(result.contains("<site_input_code>KNB</site_input_code>"));
     }
