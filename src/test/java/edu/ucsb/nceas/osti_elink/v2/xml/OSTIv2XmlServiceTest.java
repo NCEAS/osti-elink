@@ -71,6 +71,8 @@ public class OSTIv2XmlServiceTest {
     public void testMintIdentifier() throws Exception {
         String identifier = service.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
+        identifier = service.mintIdentifier("ESS-DIVE");
+        assertTrue(identifier.startsWith("doi:"));
         try {
             identifier = service.mintIdentifier("KNB");
             fail("The test can't get here");
