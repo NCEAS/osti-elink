@@ -35,7 +35,6 @@ public class OSTIElinkClientV1Test {
     private OSTIElinkErrorAgent agent = null;
     private static String username = "";
     private static String password = "";
-    protected static Log log = LogFactory.getLog(OSTIElinkServiceTest.class);
 
 
     @Before
@@ -50,7 +49,7 @@ public class OSTIElinkClientV1Test {
         className.setProperty(
             OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");
         OSTIElinkClient.setProperties(className);
-        client = new OSTIElinkClient(username, password, OSTIElinkServiceTest.BASEURL, agent);
+        client = new OSTIElinkClient(username, password, OSTIServiceTest.BASEURL, agent);
     }
     
     @After
@@ -94,7 +93,7 @@ public class OSTIElinkClientV1Test {
         assertTrue(status.equals("Saved"));
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
-            String newMetadata = OSTIElinkServiceTest.toString(is);
+            String newMetadata = OSTIServiceTest.toString(is);
             //System.out.println("the new metadata is " + newMetadata);
             //even though this request should fail in the server side, this test
             //still succeed since it is running on another thread.
@@ -108,7 +107,7 @@ public class OSTIElinkClientV1Test {
         }
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
-            String newMetadata = OSTIElinkServiceTest.toString(is);
+            String newMetadata = OSTIServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             Thread.sleep(1000);
             metadata = client.getMetadata(identifier);
@@ -119,7 +118,7 @@ public class OSTIElinkClientV1Test {
         }
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
-            String newMetadata = OSTIElinkServiceTest.toString(is);
+            String newMetadata = OSTIServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             Thread.sleep(5000);
             metadata = client.getMetadata(identifier);
