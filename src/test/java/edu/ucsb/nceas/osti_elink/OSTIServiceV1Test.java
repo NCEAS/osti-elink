@@ -39,13 +39,13 @@ import java.util.Properties;
  * @author tao
  *
  */
-public class OSTIServiceTest {
+public class OSTIServiceV1Test {
     private static OSTIElinkService ostiService = null;
     private static String username = "";
     private static String password = "";
     
     public static final String BASEURL = "https://www.osti.gov/elinktest/2416api";
-    protected static Log log = LogFactory.getLog(OSTIServiceTest.class);
+    protected static Log log = LogFactory.getLog(OSTIServiceV1Test.class);
 
 
     @Before

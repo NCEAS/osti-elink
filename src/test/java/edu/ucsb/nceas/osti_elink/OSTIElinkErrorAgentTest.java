@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +33,7 @@ public class OSTIElinkErrorAgentTest {
             //System.out.println("the user name is " + username + " and password is " + password);
         }
         agent = new StringElinkErrorAgent();
-        client = new OSTIElinkClient(username, password, OSTIServiceTest.BASEURL, agent);
+        client = new OSTIElinkClient(username, password, OSTIServiceV1Test.BASEURL, agent);
     }
     
     /**
@@ -55,7 +53,7 @@ public class OSTIElinkErrorAgentTest {
         assertTrue(agent.getError().equals(""));
         
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
-            String newMetadata = OSTIServiceTest.toString(is);
+            String newMetadata = OSTIServiceV1Test.toString(is);
             client.setMetadata(identifier, newMetadata);
             Thread.sleep(1000);
             metadata = client.getMetadata(identifier);
@@ -69,7 +67,7 @@ public class OSTIElinkErrorAgentTest {
         //still succeed since it is running on another thread.
         //however, the error agent should catch the message
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
-            String newMetadata = OSTIServiceTest.toString(is);
+            String newMetadata = OSTIServiceV1Test.toString(is);
             //System.out.println("the new metadata is " + newMetadata);
             client.setMetadata(identifier,newMetadata);
             Thread.sleep(1000);
@@ -83,7 +81,7 @@ public class OSTIElinkErrorAgentTest {
         //however, the error agent should catch the message
         String uuid = UUID.randomUUID().toString();
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
-            String newMetadata = OSTIServiceTest.toString(is);
+            String newMetadata = OSTIServiceV1Test.toString(is);
             String doi = "doi:" + uuid;
             //System.out.println("the doi is " + uuid);
             client.setMetadata(uuid, newMetadata);
