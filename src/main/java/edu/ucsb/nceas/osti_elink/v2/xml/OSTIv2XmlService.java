@@ -4,6 +4,8 @@ import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,5 +64,16 @@ public class OSTIv2XmlService extends OSTIElinkService {
         } else {
             log.debug("It got the token from the environmental variable OSTI_TOKEN.");
         }
+    }
+
+
+    /**
+     * Add the bearer token authentication method for the v2 requests
+     * @param request  the request needs to be added headers
+     */
+    @Override
+    protected void setHeaders(HttpUriRequest request) {
+        request.addHeader("Accept", "application/xml");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 }

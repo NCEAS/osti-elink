@@ -18,6 +18,7 @@
  */
 package edu.ucsb.nceas.osti_elink;
 
+import edu.ucsb.nceas.osti_elink.v1.OSTIService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class OSTIElinkServiceTest {
             password = prop.getProperty("password");
             //System.out.println("the user name is " + username + " and password is " + password);
         }
-        ostiService = new OSTIElinkService(username, password, BASEURL);
+        ostiService = new OSTIService(username, password, BASEURL);
     }
 
     /**

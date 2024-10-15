@@ -1,6 +1,8 @@
 package edu.ucsb.nceas.osti_elink.v1;
 
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * The OSTI service supports the v1 API. It extends from the OSTIElinkService class.
@@ -16,5 +18,15 @@ public class OSTIService extends OSTIElinkService {
      */
     public OSTIService(String username, String password, String baseURL) {
         super(username, password, baseURL);
+    }
+
+    /**
+     * Add the basic authentication method for the v1 requests
+     * @param request  the request needs to be added headers
+     */
+    @Override
+    protected void setHeaders(HttpUriRequest request) {
+        request.addHeader("Accept", "application/xml");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuthStr));
     }
 }

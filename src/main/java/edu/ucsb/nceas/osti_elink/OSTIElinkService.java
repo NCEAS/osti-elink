@@ -35,7 +35,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpDelete;
@@ -63,7 +62,7 @@ import org.xml.sax.SAXException;
  * @author tao
  *
  */
-public class OSTIElinkService {
+public abstract class OSTIElinkService {
     public static final String DOI = "doi";
     public static final String SAVED = "Saved";
     public static final String PENDING = "Pending";
@@ -80,8 +79,8 @@ public class OSTIElinkService {
     private String username = null;
     private String password = null;
     private String baseURL = "https://www.osti.gov/elink/2416api";
-    private CloseableHttpClient httpClient = null;
-    private  byte[] encodedAuthStr = null;
+    protected CloseableHttpClient httpClient = null;
+    protected byte[] encodedAuthStr = null;
     private Document minimalMetadataDoc = null;
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = "test";
@@ -368,8 +367,7 @@ public class OSTIElinkService {
         default:
             throw new OSTIElinkException("Unrecognized HTTP method requested.");
         }
-        request.addHeader("Accept", "application/xml");
-        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuthStr));
+        setHeaders(request);
         byte[] body = null;
         try {
             HttpResponse response = httpClient.execute(request);
@@ -384,7 +382,14 @@ public class OSTIElinkService {
         }
         return body;
     }
-    
+
+    /**
+     * This method will add the authorization and other headers for the osti service.
+     * Different version implementations will overwrite this method.
+     * @param request  the request will be modified.
+     */
+    protected abstract void setHeaders(HttpUriRequest request);
+
     /**
      * Build a minimal metadata for the given siteCode in order to
      * mint a DOI from the OSTI Elink service. If the siteCode is null or blank, the default ESS-DIVE code will be used.
