@@ -49,13 +49,14 @@ import org.xml.sax.SAXException;
  */
 public abstract class OSTIElinkService {
     public static final String DOI = "doi";
+    public static final String OSTI_ID = "osti_id";
     public static final String SAVED = "Saved";
     public static final String PENDING = "Pending";
     
-    private static final int GET = 1;
-    private static final int PUT = 2;
-    private static final int POST = 3;
-    private static final int DELETE = 4;
+    protected static final int GET = 1;
+    protected static final int PUT = 2;
+    protected static final int POST = 3;
+    protected static final int DELETE = 4;
     private static final int CONNECTIONS_PER_ROUTE = 8;
     private static final String minimalMetadataFile = "minimal-osti.xml";
     private static final String STATUS = "status";
@@ -140,7 +141,7 @@ public abstract class OSTIElinkService {
      * @throws OSTIElinkException
      */
     protected String getMetadataFromOstiId(String ostiId) throws OSTIElinkException {
-        return getMetadata(ostiId, "osti_id");
+        return getMetadata(ostiId, OSTI_ID);
     }
     
     /**
@@ -151,7 +152,7 @@ public abstract class OSTIElinkService {
      * @return  the metadata in the xml format
      * @throws OSTIElinkException 
      */
-    private String getMetadata(String identifier, String type) throws OSTIElinkException {
+    protected String getMetadata(String identifier, String type) throws OSTIElinkException {
         String metadata = null;
         if (identifier != null && !identifier.trim().equals("")) {
             //we need to remove the doi prefix
@@ -266,7 +267,7 @@ public abstract class OSTIElinkService {
             throw new OSTIElinkException("OSTIElinkService.addOrReplaceOstiIdToXMLMetadata - the metadata part must be a valid xml string. But the string is " +
                                          metadataXML + " And it can't be processed because " + e.getMessage());
         }
-        NodeList osti_id_nodes = doc.getElementsByTagName("osti_id");
+        NodeList osti_id_nodes = doc.getElementsByTagName(OSTI_ID);
         if (osti_id_nodes.getLength() == 0) {
             //it doesn't have an osti id, we need to append one
             NodeList records = doc.getElementsByTagName("record");
@@ -316,7 +317,7 @@ public abstract class OSTIElinkService {
      * @param uri endpoint to be accessed in the request
      * @return byte[] containing the response body
      */
-    private byte[] sendRequest(int requestType, String uri) throws OSTIElinkException {
+    protected byte[] sendRequest(int requestType, String uri) throws OSTIElinkException {
         return sendRequest(requestType, uri, null);
     }
     
@@ -333,6 +334,7 @@ public abstract class OSTIElinkService {
         switch (requestType) {
         case GET:
             request = new HttpGet(uri);
+            setGetHeaders(request);
             break;
         case PUT:
             request = new HttpPut(uri);
@@ -340,6 +342,7 @@ public abstract class OSTIElinkService {
                 StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                 ((HttpPut) request).setEntity(myEntity);
             }
+            setHeaders(request);
             break;
         case POST:
             request = new HttpPost(uri);
@@ -347,14 +350,15 @@ public abstract class OSTIElinkService {
                 StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                 ((HttpPost) request).setEntity(myEntity);
             }
+            setHeaders(request);
             break;
         case DELETE:
             request = new HttpDelete(uri);
+            setHeaders(request);
             break;
         default:
             throw new OSTIElinkException("Unrecognized HTTP method requested.");
         }
-        setHeaders(request);
         byte[] body = null;
         try {
             HttpResponse response = httpClient.execute(request);
@@ -371,11 +375,20 @@ public abstract class OSTIElinkService {
     }
 
     /**
-     * This method will add the authorization and other headers for the osti service.
+     * This method will add the authorization and other headers for the osti service. This is the
+     * default method. The setGetHeader is for the http get method.
      * Different version implementations will overwrite this method.
      * @param request  the request will be modified.
      */
     protected abstract void setHeaders(HttpUriRequest request);
+
+    /**
+     * This method will add the authorization and other headers for the http get method for the
+     * osti service.
+     * Different version implementations will overwrite this method.
+     * @param request  the request will be modified.
+     */
+    protected abstract void setGetHeaders(HttpUriRequest request);
 
     /**
      * Build a minimal metadata for the given siteCode in order to

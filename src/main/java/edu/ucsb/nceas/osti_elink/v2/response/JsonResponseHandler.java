@@ -11,7 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonResponseHandler {
 
     /**
-     * Get the first non-null value of a json string with the given path
+     * Get the first non-null value of a json string with the given path (first level in the
+     * array element)
      * @param json  the json string will be looked up
      * @param path  the path will be looked
      * @return  the value of element. Null will be returned if it cannot be found

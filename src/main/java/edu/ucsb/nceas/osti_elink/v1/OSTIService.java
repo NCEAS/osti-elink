@@ -29,4 +29,9 @@ public class OSTIService extends OSTIElinkService {
         request.addHeader("Accept", "application/xml");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuthStr));
     }
+
+    @Override
+    protected void setGetHeaders(HttpUriRequest request) {
+        setHeaders(request);
+    }
 }
