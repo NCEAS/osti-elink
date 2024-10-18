@@ -1,10 +1,12 @@
 package edu.ucsb.nceas.osti_elink.v2.xml;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
+import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -52,6 +54,30 @@ public class OSTIv2XmlService extends OSTIElinkService {
         this.properties = properties;
         queryURL = properties.getProperty("ostiService.v2xml.queryURL");
         loadToken();
+    }
+
+    /**
+     * Get the status of a DOI. If there are multiple records for a DOI, the status of
+     * the first one will be returned
+     * @param doi  the doi to identify the record
+     * @return  the status of the doi
+     * @throws OSTIElinkException
+     */
+    @Override
+    public String getStatus(String doi) throws OSTIElinkException {
+        String status = null;
+        String metadata = getMetadata(doi);
+        try {
+            status = JsonResponseHandler.getPathValue(metadata, "workflow_status");
+        } catch (JsonProcessingException e) {
+            throw new OSTIElinkException(e.getMessage());
+        }
+        if (status == null) {
+            throw new OSTIElinkException("There is no workflow_status for " + doi +" in the query"
+                                             + " result:\n" + metadata);
+        }
+        log.debug("The status of " + doi + " is " + status);
+        return status;
     }
 
     /**
@@ -109,32 +135,31 @@ public class OSTIv2XmlService extends OSTIElinkService {
                     "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
             } catch (UnsupportedEncodingException e) {
                 throw new OSTIElinkException(
-                    "OSTIElinkService.getMetadata - couldn't encode the query url: "
+                    "OSTIv2XmlService.getMetadata - couldn't encode the query url: "
                         + e.getMessage());
             }
-            log.info("OSTIElinkService.getMetadata - the url sending to the service is " + url);
+            log.info("The url sending to the service is " + url);
             byte[] response = sendRequest(GET, url);
             metadata = new String(response);
-            log.debug("OSTIElinkService.getMetadata - the rseponse for id " + identifier + " is\n "
-                          + metadata);
+            log.info("The response for id " + identifier + " is\n " + metadata);
             if (metadata == null || metadata.trim().equals("")) {
-                throw new OSTIElinkException("OSTIElinkService.getMetadata - the response is blank"
+                throw new OSTIElinkException("OSTIv2XmlService.getMetadata - the response is blank"
                                                  + ". It means the token is invalid for looking "
                                                  + identifier + ", which type is " + type);
             } else if (!metadata.contains(identifier)) {
                 if (metadata.equals("[]")) {
                     throw new OSTIElinkNotFoundException(
-                        "OSTIElinkService.getMetadata - OSTI can't find the identifier "
+                        "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
                             + identifier + ", which type is " + type + " since\n " + metadata);
                 } else {
                     throw new OSTIElinkException(
-                        "OSTIElinkService.getMetadata - can't get the metadata for id " + identifier
+                        "OSTIv2XmlService.getMetadata - can't get the metadata for id " + identifier
                             + " since\n " + metadata);
                 }
             }
         } else {
             throw new OSTIElinkException(
-                "OSTIElinkService.getMetadata - the given identifier can't be null or blank.");
+                "OSTIv2XmlService.getMetadata - the given identifier can't be null or blank.");
         }
         return metadata;
     }

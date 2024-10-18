@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
  * @author Tao
  */
 public class OSTIv2XmlServiceTest {
+    public static final int MAX_ATTEMPTS = 200;
     private static final String FAKE_TOKEN = "fake_token";
     private OSTIv2XmlService service;
     private String baseUrl;
@@ -139,6 +140,38 @@ public class OSTIv2XmlServiceTest {
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
             assertTrue(e.getMessage().contains("token"));
+        }
+    }
+
+    /**
+     * Test the method of getStatus
+     * @throws Exception
+     */
+    @Test
+    public void testGetStatus() throws Exception {
+        String identifier = service.mintIdentifier(null);
+        assertTrue(identifier.startsWith("doi:10."));
+        String status = null;
+        int index = 0;
+        //a new minted doi can't be querable immediately. We should give them some time.
+        while (status == null && index < MAX_ATTEMPTS) {
+            index++;
+            try {
+               status = service.getStatus(identifier);
+            } catch (Exception e) {
+                Thread.sleep(100);
+            }
+        }
+        assertEquals("SA", status);
+        identifier = "doi:10.15485/2304391";
+        status = service.getStatus(identifier);
+        assertEquals("R", status);
+        try {
+            identifier = "doi:10.15125/2304391";
+            status = service.getStatus(identifier);
+            fail("Test shouldn't get here since the doi doesn't exist");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkNotFoundException);
         }
     }
 }
