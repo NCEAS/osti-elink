@@ -162,7 +162,7 @@ public class OSTIv2XmlServiceTest {
                 Thread.sleep(100);
             }
         }
-        assertEquals("SA", status);
+        assertEquals("Saved", status);
         identifier = "doi:10.15485/2304391";
         status = service.getStatus(identifier);
         assertEquals("R", status);

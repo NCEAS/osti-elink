@@ -76,6 +76,11 @@ public class OSTIv2XmlService extends OSTIElinkService {
             throw new OSTIElinkException("There is no workflow_status for " + doi +" in the query"
                                              + " result:\n" + metadata);
         }
+        // Our metacat checks the status of Saved. However, from v1 to v2, the status of Saved
+        // changed to SA. In order not to change Metacat's code, we need to map SA to Saved
+        if (status.equals("SA")) {
+            status = OSTIElinkService.SAVED;
+        }
         log.debug("The status of " + doi + " is " + status);
         return status;
     }
