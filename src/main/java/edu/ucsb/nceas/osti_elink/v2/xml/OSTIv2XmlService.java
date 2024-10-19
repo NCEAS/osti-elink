@@ -164,4 +164,19 @@ public class OSTIv2XmlService extends OSTIElinkService {
         return metadata;
     }
 
+    @Override
+    protected String parseOSTIidFromResponse(String metadata, String doi)
+        throws OSTIElinkException {
+        if (metadata == null || metadata.trim().equals("")) {
+            throw new OSTIElinkException("The service can't parse the blank response to get the "
+                                             + "OSTI id for the DOI " + doi);
+        } else {
+            try {
+                return JsonResponseHandler.getPathValue(metadata, OSTI_ID);
+            } catch (JsonProcessingException e) {
+                throw new OSTIElinkException(e.getMessage());
+            }
+        }
+    }
+
 }

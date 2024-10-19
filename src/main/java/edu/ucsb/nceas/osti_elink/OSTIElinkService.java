@@ -512,15 +512,23 @@ public abstract class OSTIElinkService {
         if ( ostiId == null || ostiId.trim().equals("")) {
             //we can't get the osti id from doi itself. We have to query the service.
            String metadata = getMetadata(doi);
-           Document doc = generateDOM(metadata.getBytes());
-           ostiId = getElementValue(doc, "osti_id");
+           ostiId = parseOSTIidFromResponse(metadata, doi);
            log.debug("OSTIElinkService.getOstiId - tried to query the service to get the osti id " + ostiId +
                    " from the doi idetnifier " + doi);
         }
         log.debug("OSTIElinkService.getOstiId - the osti id of the doi identifier " + doi + " is " + ostiId);
         return ostiId;
     }
-    
+
+    /**
+     * Parse the query response to the osti_id for the given doi
+     * @param metadata  the query response
+     * @param doi  the doi
+     * @return the osti id for the doi
+     * @throws OSTIElinkException
+     */
+    protected abstract String parseOSTIidFromResponse(String metadata, String doi)
+        throws OSTIElinkException;
     /**
      * Generate a dom document for the given byte array
      * @param bytes  the content will be used for the dom document
@@ -529,7 +537,7 @@ public abstract class OSTIElinkService {
      * @throws SAXException
      * @throws IOException
      */
-    private static Document generateDOM(byte[] bytes) throws OSTIElinkException{
+    protected static Document generateDOM(byte[] bytes) throws OSTIElinkException{
         Document doc = null;
         try {
             ByteArrayInputStream is = new ByteArrayInputStream(bytes);
@@ -553,7 +561,7 @@ public abstract class OSTIElinkService {
      * @param elementName  the name of the element
      * @return  the value of the element
      */
-    private String getElementValue(Document doc, String elementName) {
+    protected String getElementValue(Document doc, String elementName) {
         String value = null;
         if (doc != null && elementName != null && !elementName.trim().equals("")) {
             NodeList nodes = doc.getElementsByTagName(elementName);

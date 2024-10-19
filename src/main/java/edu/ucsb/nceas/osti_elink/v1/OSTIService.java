@@ -1,8 +1,10 @@
 package edu.ucsb.nceas.osti_elink.v1;
 
+import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.w3c.dom.Document;
 
 /**
  * The OSTI service supports the v1 API. It extends from the OSTIElinkService class.
@@ -33,5 +35,17 @@ public class OSTIService extends OSTIElinkService {
     @Override
     protected void setGetHeaders(HttpUriRequest request) {
         setHeaders(request);
+    }
+
+    @Override
+    protected String parseOSTIidFromResponse(String metadata, String doi)
+        throws OSTIElinkException {
+        if (metadata == null || metadata.trim().equals("")) {
+            throw new OSTIElinkException("The service can't parse the blank response to get the "
+                                             + "OSTI id for the DOI " + doi);
+        } else {
+            Document doc = generateDOM(metadata.getBytes());
+            return getElementValue(doc, OSTI_ID);
+        }
     }
 }
