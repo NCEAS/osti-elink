@@ -25,13 +25,15 @@ public class OSTIElinkErrorAgentTest {
 
     @Before
     public void setUp() throws Exception {
+        Properties prop = new Properties();
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.properties")) {
-            Properties prop = new Properties();
             prop.load(is);
             username = prop.getProperty("username");
             password = prop.getProperty("password");
-            //System.out.println("the user name is " + username + " and password is " + password);
         }
+        prop.setProperty(
+            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+        OSTIElinkClient.setProperties(prop);
         agent = new StringElinkErrorAgent();
         client = new OSTIElinkClient(username, password, OSTIServiceV1Test.BASEURL, agent);
     }

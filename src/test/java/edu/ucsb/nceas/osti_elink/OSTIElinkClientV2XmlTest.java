@@ -1,21 +1,24 @@
 package edu.ucsb.nceas.osti_elink;
 
-import java.io.InputStream;
-import java.util.Properties;
-
-import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class OSTIElinkClientV1Test {
+/**
+ * Test the OSTIElinkClient class connecting a v2xml api
+ * @author Tao
+ */
+public class OSTIElinkClientV2XmlTest {
+
     private OSTIElinkClient client = null;
     private OSTIElinkErrorAgent agent = null;
-    private static String username = "";
-    private static String password = "";
 
 
     @Before
@@ -23,15 +26,16 @@ public class OSTIElinkClientV1Test {
         Properties prop = new Properties();
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.properties")) {
             prop.load(is);
-            username = prop.getProperty("username");
-            password = prop.getProperty("password");
         }
         prop.setProperty(
-            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+            OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
+            "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
         OSTIElinkClient.setProperties(prop);
-        client = new OSTIElinkClient(username, password, OSTIServiceV1Test.BASEURL, agent);
+        String baseURL = prop.getProperty("ostiService.v2.baseURL");
+        //Username and password are null
+        client = new OSTIElinkClient(null, null, baseURL, agent);
     }
-    
+
     @After
     public void tearDown() {
         client.shutdown();
@@ -41,10 +45,10 @@ public class OSTIElinkClientV1Test {
      * Test the getService method
      */
     @Test
-    public void testGetService() throws Exception {
-        assertTrue(client.getService() instanceof OSTIService);
+    public void testGetService() {
+        assertTrue(client.getService() instanceof OSTIv2XmlService);
     }
-    
+
     /**
      * Test the mintIdentifier method
      * @throws Exception
@@ -62,7 +66,7 @@ public class OSTIElinkClientV1Test {
             assertTrue(e instanceof OSTIElinkException);
         }
     }
-    
+
     /**
      * Test the mintIdentifier method
      * @throws Exception
@@ -72,17 +76,14 @@ public class OSTIElinkClientV1Test {
         String identifier = client.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
         identifier = OSTIElinkService.removeDOI(identifier);
-        //System.out.println("the doi identifier is " + identifier);
         String metadata = client.getMetadata(identifier);
         assertTrue(metadata.contains(identifier));
         assertTrue(metadata.contains("<title>unknown</title>"));
         String status = client.getStatus(identifier);
         assertTrue(status.equals("Saved"));
 
-        try (InputStream is = getClass().getClassLoader()
-            .getResourceAsStream("test-files/input-two-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
-            //System.out.println("the new metadata is " + newMetadata);
             //even though this request should fail in the server side, this test
             //still succeed since it is running on another thread.
             client.setMetadata(identifier,newMetadata);
@@ -94,8 +95,7 @@ public class OSTIElinkClientV1Test {
             assertTrue(status.equals("Saved"));
         }
 
-        try (InputStream is = getClass().getClassLoader()
-            .getResourceAsStream("test-files/input-no-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
             client.setMetadata(identifier, newMetadata);
             Thread.sleep(1000);
@@ -106,8 +106,7 @@ public class OSTIElinkClientV1Test {
             assertTrue(status.equals("Pending"));
         }
 
-        try (InputStream is = getClass().getClassLoader()
-            .getResourceAsStream("test-files/input-one-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
             client.setMetadata(identifier, newMetadata);
             Thread.sleep(5000);

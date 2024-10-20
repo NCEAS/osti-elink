@@ -3,7 +3,9 @@ package edu.ucsb.nceas.osti_elink;
 import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -24,7 +26,7 @@ public class OSTIServiceFactory {
      */
     public static OSTIElinkService getOSTIElinkService(Properties properties)
         throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
-        ClassNotSupported {
+        ClassNotSupported, IOException {
         OSTIElinkService service;
         // Get className from the environment variable first. If we can't, read it from the
         // property file.
@@ -32,15 +34,19 @@ public class OSTIServiceFactory {
         if (className == null) {
             className = getProperty(OSTISERVICE_CLASS_NAME, properties);
         }
+        String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
             // v1 service
             String userName = getProperty(OSTIElinkClient.USER_NAME_PROPERTY, properties);
             String password = getProperty(OSTIElinkClient.PASSWORD_PROPERTY, properties);
-            String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
+
             service = new OSTIService(userName, password, baseURL);
             //service.setProperties(properties);
+
+        } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService")) {
+            service = new OSTIv2XmlService(null, null, baseURL, properties);
         } else {
-            throw new ClassNotSupported("OSTIService does not find the class " + className);
+            throw new ClassNotSupported("OSTIService does not support the class " + className);
         }
         return service;
     }

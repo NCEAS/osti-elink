@@ -63,12 +63,16 @@ public class OSTIElinkClient {
         if (properties == null)  {
             loadDefaultPropertyFile();
         }
-        properties.setProperty(USER_NAME_PROPERTY, username);
-        properties.setProperty(PASSWORD_PROPERTY, password);
+        if (username != null) {
+            properties.setProperty(USER_NAME_PROPERTY, username);
+        }
+        if (password != null) {
+            properties.setProperty(PASSWORD_PROPERTY, password);
+        }
         properties.setProperty(BASE_URL_PROPERTY, baseURL);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
-        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported e) {
+        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException e) {
             log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
             throw new RuntimeException(e);
         }
@@ -170,6 +174,14 @@ public class OSTIElinkClient {
         while (!executor.isTerminated()) {
             //log.debug("OSTIElinkClient.shutdown....");
         }
+    }
+
+    /**
+     * Get the OSTIElinkService object associated with the client
+     * @return the OSTIElinkService object
+     */
+    public OSTIElinkService getService() {
+        return this.service;
     }
 
 }

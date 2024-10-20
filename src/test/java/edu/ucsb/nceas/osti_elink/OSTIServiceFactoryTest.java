@@ -3,6 +3,7 @@ package edu.ucsb.nceas.osti_elink;
 import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -50,7 +51,7 @@ public class OSTIServiceFactoryTest {
     }
 
     /**
-     * Test to get a V! OSTIService
+     * Test to get a V1 OSTIService
      * @throws Exception
      */
     @Test
@@ -64,6 +65,29 @@ public class OSTIServiceFactoryTest {
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
         assertTrue(service instanceof OSTIService);
         properties.remove(OSTIElinkClient.USER_NAME_PROPERTY);
+        try {
+            service = OSTIServiceFactory.getOSTIElinkService(properties);
+            fail("Test can't get there since the username property is not set.");
+        } catch (Exception e) {
+            assertTrue(e instanceof PropertyNotFound);
+        }
+    }
+
+    /**
+     * Test to get a V2Xml OSTIService
+     * @throws Exception
+     */
+    @Test
+    public void testGetOSTIV2XmlService() throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
+                               "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
+        properties.setProperty("ostiService.v2xml.queryURL", "https://review.osti.gov/elink2api");
+        properties.setProperty("ostiService.tokenPath", "./token");
+        OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
+        assertTrue(service instanceof OSTIv2XmlService);
+        properties.remove("ostiService.tokenPath");
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
             fail("Test can't get there since the username property is not set.");
