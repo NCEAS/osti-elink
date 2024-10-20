@@ -23,7 +23,7 @@ import java.util.Properties;
  * This class represents the service for v2xml
  */
 public class OSTIv2XmlService extends OSTIElinkService {
-    public static final String OSTI_TOKEN = "OSTI_TOKEN";
+    public static final String OSTI_TOKEN = "osti.token";
     protected static String token;
     protected static String queryURL;
 
