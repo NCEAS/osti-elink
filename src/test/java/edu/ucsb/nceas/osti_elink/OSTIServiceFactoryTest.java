@@ -4,7 +4,9 @@ import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
+import org.junit.Rule;
 import org.junit.Test;
+import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.util.Properties;
 
@@ -17,6 +19,9 @@ import static org.junit.Assert.fail;
  * @author Tao
  */
 public class OSTIServiceFactoryTest {
+    @Rule
+    public EnvironmentVariablesRule environmentVariablesRule =
+        new EnvironmentVariablesRule("ostiService.className", null);
 
     /**
      * Test the getProperty method
@@ -74,6 +79,33 @@ public class OSTIServiceFactoryTest {
     }
 
     /**
+     * Test to get a V1 OSTIService when the env is set to be v1 while the property is set to v2xml
+     * @throws Exception
+     */
+    @Test
+    public void testGetOSTIV1ServiceFromEnv() throws Exception {
+        // env set the variable v1
+        environmentVariablesRule.set(
+            "ostiService.className", "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+        Properties properties = new Properties();
+        properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
+        properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");
+        properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
+        // Properties set it to v2xml
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
+                               "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
+        OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
+        assertTrue(service instanceof OSTIService);
+        properties.remove(OSTIElinkClient.USER_NAME_PROPERTY);
+        try {
+            service = OSTIServiceFactory.getOSTIElinkService(properties);
+            fail("Test can't get there since the username property is not set.");
+        } catch (Exception e) {
+            assertTrue(e instanceof PropertyNotFound);
+        }
+    }
+
+    /**
      * Test to get a V2Xml OSTIService
      * @throws Exception
      */
@@ -83,6 +115,33 @@ public class OSTIServiceFactoryTest {
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
         properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
                                "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
+        properties.setProperty("ostiService.v2xml.queryURL", "https://review.osti.gov/elink2api");
+        properties.setProperty("ostiService.tokenPath", "./token");
+        OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
+        assertTrue(service instanceof OSTIv2XmlService);
+        properties.remove("ostiService.tokenPath");
+        try {
+            service = OSTIServiceFactory.getOSTIElinkService(properties);
+            fail("Test can't get there since the username property is not set.");
+        } catch (Exception e) {
+            assertTrue(e instanceof PropertyNotFound);
+        }
+    }
+
+    /**
+     * Test to get a V2Xml OSTIService when the env variable set it v2xml while properties set it v1
+     * @throws Exception
+     */
+    @Test
+    public void testGetOSTIV2XmlServiceFromEnv() throws Exception {
+        // env set the variable v2xml
+        environmentVariablesRule.set(
+            "ostiService.className", "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
+        Properties properties = new Properties();
+        properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
+        // properties set the variable v1
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
+                               "edu.ucsb.nceas.osti_elink.v1.OSTIService");
         properties.setProperty("ostiService.v2xml.queryURL", "https://review.osti.gov/elink2api");
         properties.setProperty("ostiService.tokenPath", "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
