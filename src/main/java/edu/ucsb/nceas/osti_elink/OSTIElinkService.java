@@ -43,7 +43,9 @@ import org.xml.sax.SAXException;
 
 /**
  * OSTIElinkService provides access to the identifier service maintained by OSTI.
- * Please see the documentation at https://www.osti.gov/elink/241-6api.jsp 
+ * Please see the documentation at https://www.osti.gov/elink/241-6api.jsp
+ * Its child classes should overwrite those four methods:
+ * mintIdentifier, getMetadata, getStatus, and setMetadata
  * @author tao
  *
  */
@@ -466,7 +468,7 @@ public abstract class OSTIElinkService {
      * @param identifier  the identifier which will be removed "doi:" if it has one
      * @return  the string with the "doi:" part if it has; otherwise return the identifier itself
      */
-    protected static String removeDOI(String identifier) {
+    public static String removeDOI(String identifier) {
         log.debug("OSTIElinkService.removeDOI - the origial identifier is " + identifier);
         String doiPrefix = DOI + ":";
         if (identifier!= null) {

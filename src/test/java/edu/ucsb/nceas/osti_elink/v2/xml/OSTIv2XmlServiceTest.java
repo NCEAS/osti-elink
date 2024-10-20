@@ -3,12 +3,14 @@ package edu.ucsb.nceas.osti_elink.v2.xml;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -172,6 +174,82 @@ public class OSTIv2XmlServiceTest {
             fail("Test shouldn't get here since the doi doesn't exist");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkNotFoundException);
+        }
+    }
+
+    /**
+     * Test the method of setMetadata
+     * @throws Exception
+     */
+    @Test
+    public void testSetMetadata() throws Exception {
+        String identifier = service.mintIdentifier(null);
+        assertTrue(identifier.startsWith("doi:10."));
+        identifier = OSTIElinkService.removeDOI(identifier);
+        int index = 0;
+        String metadata = null;
+        while (index <= MAX_ATTEMPTS) {
+            try {
+                metadata = service.getMetadata(identifier);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(200);
+            }
+            index++;
+        }
+        assertTrue(metadata.contains(identifier));
+        assertTrue(metadata.contains("\"title\":\"unknown\""));
+
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-two-osti-id.xml")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            try {
+                service.setMetadata(identifier, null, newMetadata);
+                fail("Test can't reach here");
+            } catch (Exception e) {
+                assertTrue(e instanceof OSTIElinkException);
+            }
+            metadata = service.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertTrue(metadata.contains("\"title\":\"unknown\""));
+        }
+
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id.xml")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            service.setMetadata(identifier, null, newMetadata);
+            index = 0;
+            metadata = service.getMetadata(identifier);
+            while (!metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions "
+                                         + "between\"") && index < MAX_ATTEMPTS) {
+                Thread.sleep(200);
+                index++;
+                metadata = service.getMetadata(identifier);
+
+            }
+            assertTrue(metadata.contains(identifier));
+            assertTrue(
+                metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions between\""));
+        }
+
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-one-osti-id.xml")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            service.setMetadata(identifier, null, newMetadata);
+            metadata = service.getMetadata(identifier);
+            index = 0;
+            metadata = service.getMetadata(identifier);
+            while (!metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
+                                          + "between\"") && index < MAX_ATTEMPTS) {
+                Thread.sleep(200);
+                index++;
+                metadata = service.getMetadata(identifier);
+
+            }
+            assertTrue(metadata.contains(identifier));
+            assertTrue(
+                metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
+                                      + "between\""));
         }
     }
 }
