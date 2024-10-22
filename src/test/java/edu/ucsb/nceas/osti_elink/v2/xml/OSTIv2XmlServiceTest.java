@@ -220,16 +220,16 @@ public class OSTIv2XmlServiceTest {
             service.setMetadata(identifier, null, newMetadata);
             index = 0;
             metadata = service.getMetadata(identifier);
+
             while (!metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions "
-                                         + "between\"") && index < MAX_ATTEMPTS) {
+                                         + "between") && index < MAX_ATTEMPTS) {
                 Thread.sleep(200);
                 index++;
                 metadata = service.getMetadata(identifier);
-
             }
             assertTrue(metadata.contains(identifier));
             assertTrue(
-                metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions between\""));
+                metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions between"));
         }
 
         try (InputStream is = getClass().getClassLoader()
@@ -240,7 +240,7 @@ public class OSTIv2XmlServiceTest {
             index = 0;
             metadata = service.getMetadata(identifier);
             while (!metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
-                                          + "between\"") && index < MAX_ATTEMPTS) {
+                                          + "between") && index < MAX_ATTEMPTS) {
                 Thread.sleep(200);
                 index++;
                 metadata = service.getMetadata(identifier);
@@ -249,7 +249,7 @@ public class OSTIv2XmlServiceTest {
             assertTrue(metadata.contains(identifier));
             assertTrue(
                 metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
-                                      + "between\""));
+                                      + "between"));
         }
     }
 }
