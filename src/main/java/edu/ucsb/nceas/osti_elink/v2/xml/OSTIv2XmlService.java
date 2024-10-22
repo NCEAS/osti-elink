@@ -55,7 +55,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
         throws PropertyNotFound, IOException, OSTIElinkException {
         super(username, password, baseURL);
         this.properties = properties;
-        getBaseAndQueryURL();
+        constructBaseAndQueryURL();
         loadToken();
     }
 
@@ -113,7 +113,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * The environmental surpasses the property one.
      * @throws OSTIElinkException
      */
-    protected void getBaseAndQueryURL() throws OSTIElinkException {
+    protected void constructBaseAndQueryURL() throws OSTIElinkException {
         String url = System.getenv("guid.doi.baseurl");
         if (url != null && ! url.trim().equals("")) {
             log.debug("Get the baseURL from the env variable guid.doi.baseurl " + url);
@@ -210,4 +210,11 @@ public class OSTIv2XmlService extends OSTIElinkService {
         }
     }
 
+    protected String getBaseUrl() {
+        return baseURL;
+    }
+
+    protected String getQueryURL() {
+        return queryURL;
+    }
 }

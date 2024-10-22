@@ -32,6 +32,9 @@ public class OSTIv2XmlServiceTest {
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
         new EnvironmentVariablesRule("osti.token", null);
+    @Rule
+    public EnvironmentVariablesRule environmentVariablesURLRule =
+        new EnvironmentVariablesRule("guid.doi.baseurl", null);
 
     @Before
     public void setUp() throws Exception {
@@ -65,6 +68,22 @@ public class OSTIv2XmlServiceTest {
         assertEquals(FAKE_TOKEN, System.getenv("osti.token"));
         service.loadToken();
         assertEquals(FAKE_TOKEN, service.token);
+    }
+
+    /**
+     * Test to overwrite the base url and query url by the env variable setting
+     * @throws Exception
+     */
+    @Test
+    public void testOverwriteURLByEnv() throws Exception {
+        assertEquals(testBaseURL + "/" + "elink2xml/upload", service.getBaseUrl());
+        assertEquals(testBaseURL + "/" + "elink2api", service.getQueryURL());
+        // Set the env variable
+        environmentVariablesURLRule.set("guid.doi.baseurl", "https://foo.com");
+        assertEquals("https://foo.com", System.getenv("guid.doi.baseurl"));
+        service.constructBaseAndQueryURL();
+        assertEquals("https://foo.com" + "/" + "elink2xml/upload", service.getBaseUrl());
+        assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryURL());
     }
 
     /**
