@@ -66,7 +66,7 @@ public abstract class OSTIElinkService {
     
     private String username = null;
     private String password = null;
-    private String baseURL = "https://www.osti.gov/elink/2416api";
+    protected String baseURL = "https://www.osti.gov/elink/2416api";
     protected CloseableHttpClient httpClient = null;
     protected byte[] encodedAuthStr = null;
     private Document minimalMetadataDoc = null;

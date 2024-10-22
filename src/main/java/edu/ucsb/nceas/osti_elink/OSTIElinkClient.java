@@ -59,7 +59,8 @@ public class OSTIElinkClient {
      *                    If it is null, the error messages will only be logged in the error level.
      * 
      */
-    public OSTIElinkClient(String username, String password, String baseURL, OSTIElinkErrorAgent errorAgent) {
+    public OSTIElinkClient(
+        String username, String password, String baseURL, OSTIElinkErrorAgent errorAgent) {
         if (properties == null)  {
             loadDefaultPropertyFile();
         }
@@ -72,7 +73,8 @@ public class OSTIElinkClient {
         properties.setProperty(BASE_URL_PROPERTY, baseURL);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
-        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException e) {
+        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
+                 OSTIElinkException e) {
             log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
             throw new RuntimeException(e);
         }

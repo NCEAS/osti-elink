@@ -34,9 +34,8 @@ public class OSTIElinkClientV2XmlTest {
             OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
             "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
         OSTIElinkClient.setProperties(prop);
-        String baseURL = prop.getProperty("ostiService.v2.baseURL");
         //Username and password are null
-        client = new OSTIElinkClient(null, null, baseURL, agent);
+        client = new OSTIElinkClient(null, null, OSTIv2XmlServiceTest.testBaseURL, agent);
     }
 
     @After

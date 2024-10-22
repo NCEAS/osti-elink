@@ -23,10 +23,11 @@ public class OSTIServiceFactory {
      * @throws IllegalArgumentException
      * @throws PropertyNotFound
      * @throws ClassNotFoundException
+     * @throws OSTIElinkException
      */
     public static OSTIElinkService getOSTIElinkService(Properties properties)
         throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
-        ClassNotSupported, IOException {
+        ClassNotSupported, IOException, OSTIElinkException {
         OSTIElinkService service;
         // Get className from the environment variable first. If we can't, read it from the
         // property file.

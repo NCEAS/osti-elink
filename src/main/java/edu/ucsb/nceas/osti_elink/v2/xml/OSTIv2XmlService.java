@@ -24,11 +24,13 @@ import java.util.Properties;
  */
 public class OSTIv2XmlService extends OSTIElinkService {
     public static final String OSTI_TOKEN = "osti.token";
+    private static final String UPLOAD_SUFFIX = "elink2xml/upload";
+    private static final String QUERY_SUFFIX = "elink2api";
     protected static String token;
     protected static String queryURL;
 
     /**
-     * Constructor
+     * Constructor. This one will NOT be used.
      *
      * @param username the username of the account which can access the OSTI service
      * @param password the password of the account which can access the OSTI service
@@ -47,12 +49,13 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @param properties  the properties will be used in the OSTI service
      * @throws PropertyNotFound
      * @throws IOException
+     * @throws OSTIElinkException
      */
     public OSTIv2XmlService(String username, String password, String baseURL, Properties properties)
-        throws PropertyNotFound, IOException {
+        throws PropertyNotFound, IOException, OSTIElinkException {
         super(username, password, baseURL);
         this.properties = properties;
-        queryURL = properties.getProperty("ostiService.v2xml.queryURL");
+        getBaseAndQueryURL();
         loadToken();
     }
 
@@ -102,6 +105,29 @@ public class OSTIv2XmlService extends OSTIElinkService {
         } else {
             log.debug("It got the token from the environmental variable OSTI_TOKEN.");
         }
+    }
+
+    /**
+     * Get base and query url. They both construct from the host name. The host name can be read
+     * either from the environmental variable guid.doi.baseurl or a property with the same name.
+     * The environmental surpasses the property one.
+     * @throws OSTIElinkException
+     */
+    protected void getBaseAndQueryURL() throws OSTIElinkException {
+        String url = System.getenv("guid.doi.baseurl");
+        if (url != null && ! url.trim().equals("")) {
+            log.debug("Get the baseURL from the env variable guid.doi.baseurl " + url);
+            baseURL = url;
+        }
+        if (baseURL == null) {
+            throw new OSTIElinkException("The base URL for the osti service is null");
+        }
+        if (!baseURL.endsWith("/")) {
+            baseURL = baseURL + "/";
+        }
+        queryURL = baseURL + QUERY_SUFFIX;
+        baseURL = baseURL + UPLOAD_SUFFIX;
+        log.debug("The OSTI base query is " + baseURL + " and the query url is " + queryURL);
     }
 
     /**

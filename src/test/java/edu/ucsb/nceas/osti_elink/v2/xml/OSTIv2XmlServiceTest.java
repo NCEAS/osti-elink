@@ -24,10 +24,10 @@ import static org.junit.Assert.fail;
  * @author Tao
  */
 public class OSTIv2XmlServiceTest {
+    public static final String testBaseURL = "https://review.osti.gov";
     public static final int MAX_ATTEMPTS = 200;
     private static final String FAKE_TOKEN = "fake_token";
     private OSTIv2XmlService service;
-    private String baseUrl;
     private Properties props;
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
@@ -39,9 +39,8 @@ public class OSTIv2XmlServiceTest {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.properties")) {
             props.load(is);
         }
-        baseUrl = props.getProperty("ostiService.v2.baseURL");
         //username and password are null (it uses token)
-        service = new OSTIv2XmlService(null, null, baseUrl, props);
+        service = new OSTIv2XmlService(null, null, testBaseURL, props);
     }
 
     /**
