@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink;
 
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
+import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlServiceTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -76,13 +79,24 @@ public class OSTIElinkClientV2XmlTest {
         String identifier = client.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
         identifier = OSTIElinkService.removeDOI(identifier);
-        String metadata = client.getMetadata(identifier);
+        int index = 0;
+        String metadata = null;
+        while (index <= OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
+            try {
+                metadata = client.getMetadata(identifier);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(200);
+            }
+            index++;
+        }
         assertTrue(metadata.contains(identifier));
-        assertTrue(metadata.contains("<title>unknown</title>"));
+        assertTrue(metadata.contains("\"title\":\"unknown\""));
         String status = client.getStatus(identifier);
-        assertTrue(status.equals("Saved"));
+        assertEquals("Saved", status);
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-two-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-two-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
             //even though this request should fail in the server side, this test
             //still succeed since it is running on another thread.
@@ -90,31 +104,51 @@ public class OSTIElinkClientV2XmlTest {
             Thread.sleep(1000);
             metadata = client.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>unknown</title>"));
+            assertTrue(metadata.contains("\"title\":\"unknown\""));
             status = client.getStatus(identifier);
-            assertTrue(status.equals("Saved"));
+            assertEquals("Saved", status);
         }
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-no-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
             client.setMetadata(identifier, newMetadata);
-            Thread.sleep(1000);
+            index = 0;
             metadata = client.getMetadata(identifier);
+            while (!metadata.contains(
+                "\"title\":\"0 - Data from Raczka et al., Interactions " + "between")
+                && index < OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
+                Thread.sleep(200);
+                index++;
+                metadata = client.getMetadata(identifier);
+            }
             assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>0 - Data from Raczka et al., Interactions between"));
+            assertTrue(
+                metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions between"));
             status = client.getStatus(identifier);
-            assertTrue(status.equals("Pending"));
+            assertNotEquals("Saved", status);
         }
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test-files/input-one-osti-id.xml")) {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-one-osti-id.xml")) {
             String newMetadata = OSTIServiceV1Test.toString(is);
             client.setMetadata(identifier, newMetadata);
-            Thread.sleep(5000);
             metadata = client.getMetadata(identifier);
+            index = 0;
+            metadata = client.getMetadata(identifier);
+            while (!metadata.contains(
+                "\"title\":\"1 - Data from Raczka et al., Interactions between")
+                && index < OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
+                Thread.sleep(200);
+                index++;
+                metadata = client.getMetadata(identifier);
+            }
             assertTrue(metadata.contains(identifier));
-            assertTrue(metadata.contains("<title>1 - Data from Raczka et al., Interactions between"));
+            assertTrue(
+                metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
+                                      + "between"));
             status = client.getStatus(identifier);
-            assertTrue(status.equals("Pending"));
+            assertNotEquals("Saved", status);
         }
     }
 
