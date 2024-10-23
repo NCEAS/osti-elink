@@ -55,7 +55,7 @@ public class OSTIServiceFactory {
             service = new OSTIService(userName, password, baseURL);
             //service.setProperties(properties);
 
-        } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService")) {
+        } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService")) {
             service = new OSTIv2XmlService(null, null, baseURL, properties);
         } else {
             throw new ClassNotSupported("OSTIService does not support the class " + className);

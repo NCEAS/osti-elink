@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
  * @author Tao
  */
 public class OSTIElinkClientV2XmlTest {
-
+    private static final String v2ClassName = "edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService";
     private OSTIElinkClient client = null;
     private OSTIElinkErrorAgent agent = null;
 
@@ -31,8 +31,7 @@ public class OSTIElinkClientV2XmlTest {
             prop.load(is);
         }
         prop.setProperty(
-            OSTIServiceFactory.OSTISERVICE_CLASS_NAME,
-            "edu.ucsb.nceas.osti_elink.v2.OSTIv2XmlService");
+            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, v2ClassName);
         OSTIElinkClient.setProperties(prop);
         //Username and password are null
         client = new OSTIElinkClient(null, null, OSTIv2XmlServiceTest.testBaseURL, agent);
