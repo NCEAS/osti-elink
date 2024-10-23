@@ -40,9 +40,7 @@ import org.apache.commons.logging.LogFactory;
 public class OSTIElinkClient {
     public static final String USER_NAME_PROPERTY = "ostiService.userName";
     public static final String PASSWORD_PROPERTY = "ostiService.password";
-    public static final String BASE_URL_PROPERTY = "ostiService.baseURL";
-    private String USERNAME = "";
-    private String PASSWORD = "";
+    public static final String BASE_URL_PROPERTY = "guid.doi.baseurl";
     private OSTIElinkErrorAgent errorAgent = null;
     private OSTIElinkService service = null;
     private ExecutorService executor = null;
@@ -52,7 +50,7 @@ public class OSTIElinkClient {
 
     /**
      * Constructor
-     * @param username  the user name of an OSTIElink account
+     * @param username  the username of an OSTIElink account
      * @param password  the password of the OSTIElink account
      * @param baseURL  the base url of the OSTIElink service
      * @param errorAgent  the class used to send error message to administers. It can be null.

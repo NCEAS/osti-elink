@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.xml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.ucsb.nceas.osti_elink.OSTIElinkClient;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -115,7 +116,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws OSTIElinkException
      */
     protected void constructBaseAndQueryURL() throws OSTIElinkException {
-        String url = System.getenv("guid.doi.baseurl");
+        String url = System.getenv(OSTIElinkClient.BASE_URL_PROPERTY);
         if (url != null && ! url.trim().equals("")) {
             log.debug("Get the baseURL from the env variable guid.doi.baseurl " + url);
             baseURL = url;
