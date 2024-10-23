@@ -174,4 +174,19 @@ public class OSTIServiceFactoryTest {
             assertTrue(e instanceof ClassNotSupported);
         }
     }
+
+    /**
+     * If we can't find the class name in neither the environmental variable nor the properties
+     * file, the default class - v1 will be used
+     * @throws Exception
+     */
+    @Test
+    public void testCreateDefaultClass() throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
+        properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");
+        properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
+        OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
+        assertTrue(service instanceof OSTIService);
+    }
 }

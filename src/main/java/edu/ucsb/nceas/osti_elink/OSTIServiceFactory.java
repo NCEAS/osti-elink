@@ -4,6 +4,8 @@ import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -14,6 +16,7 @@ import java.util.Properties;
  */
 public class OSTIServiceFactory {
     public static final String OSTISERVICE_CLASS_NAME = "ostiService.className";
+    private static final Log log = LogFactory.getLog(OSTIServiceFactory.class);
 
     /**
      * Get the OSTIElinService instance based on the environment variables and given properties.
@@ -33,7 +36,15 @@ public class OSTIServiceFactory {
         // property file.
         String className = System.getenv(OSTISERVICE_CLASS_NAME);
         if (className == null) {
-            className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+            try {
+                className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+            } catch (PropertyNotFound e) {
+                log.debug("We cannot find the " + OSTISERVICE_CLASS_NAME + " in neither the evn "
+                              + "variable nor the properties file. So we will use the default one: "
+                              + "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+                className = "edu.ucsb.nceas.osti_elink.v1.OSTIService";
+            }
+
         }
         String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
