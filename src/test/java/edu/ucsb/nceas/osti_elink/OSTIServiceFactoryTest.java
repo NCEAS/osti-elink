@@ -113,11 +113,10 @@ public class OSTIServiceFactoryTest {
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
         properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME, v2ClassName);
-        properties.setProperty("ostiService.v2xml.queryURL", "https://review.osti.gov/elink2api");
-        properties.setProperty("ostiService.tokenPath", "./token");
+        properties.setProperty(OSTIv2XmlService.TOKEN_PATH_PROP_NAME, "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
         assertTrue(service instanceof OSTIv2XmlService);
-        properties.remove("ostiService.tokenPath");
+        properties.remove(OSTIv2XmlService.TOKEN_PATH_PROP_NAME);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
             fail("Test can't get there since the username property is not set.");
@@ -138,11 +137,10 @@ public class OSTIServiceFactoryTest {
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
         // properties set the variable v1
         properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASS_NAME, v1ClassName);
-        properties.setProperty("ostiService.v2xml.queryURL", "https://review.osti.gov/elink2api");
-        properties.setProperty("ostiService.tokenPath", "./token");
+        properties.setProperty(OSTIv2XmlService.TOKEN_PATH_PROP_NAME, "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
         assertTrue(service instanceof OSTIv2XmlService);
-        properties.remove("ostiService.tokenPath");
+        properties.remove(OSTIv2XmlService.TOKEN_PATH_PROP_NAME);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
             fail("Test can't get there since the username property is not set.");

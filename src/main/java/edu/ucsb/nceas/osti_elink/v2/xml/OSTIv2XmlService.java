@@ -24,6 +24,7 @@ import java.util.Properties;
  */
 public class OSTIv2XmlService extends OSTIElinkService {
     public static final String OSTI_TOKEN = "osti.token";
+    public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
     private static final String QUERY_SUFFIX = "elink2api";
     protected static String token;
@@ -98,7 +99,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     protected void loadToken() throws PropertyNotFound, IOException {
         token = System.getenv(OSTI_TOKEN);
         if (token == null) {
-            String token_path = OSTIServiceFactory.getProperty("ostiService.tokenPath", properties);
+            String token_path = OSTIServiceFactory.getProperty(TOKEN_PATH_PROP_NAME, properties);
             log.debug("Can't get the token from the environmental variable OSTI_TOKEN and will "
                           + "read it from a file " + token_path);
             token = FileUtils.readFileToString(new File(token_path), "UTF-8");
