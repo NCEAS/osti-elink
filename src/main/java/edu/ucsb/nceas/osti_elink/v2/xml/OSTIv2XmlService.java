@@ -101,11 +101,11 @@ public class OSTIv2XmlService extends OSTIElinkService {
         token = System.getenv(OSTI_TOKEN);
         if (token == null) {
             String token_path = OSTIServiceFactory.getProperty(TOKEN_PATH_PROP_NAME, properties);
-            log.debug("Can't get the token from the environmental variable OSTI_TOKEN and will "
+            log.info("Can't get the token from the environmental variable OSTI_TOKEN and will "
                           + "read it from a file " + token_path);
             token = FileUtils.readFileToString(new File(token_path), "UTF-8");
         } else {
-            log.debug("It got the token from the environmental variable OSTI_TOKEN.");
+            log.info("It got the token from the environmental variable - " + OSTI_TOKEN);
         }
     }
 
@@ -116,9 +116,11 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws OSTIElinkException
      */
     protected void constructBaseAndQueryURL() throws OSTIElinkException {
+        log.info("The base URL from the property file is " + baseURL);
         String url = System.getenv(OSTIElinkClient.BASE_URL_PROPERTY);
-        if (url != null && ! url.trim().equals("")) {
-            log.debug("Get the baseURL from the env variable guid.doi.baseurl " + url);
+        if (url != null && !url.trim().equals("")) {
+            log.info("The base URL from the env variable " + OSTIElinkClient.BASE_URL_PROPERTY
+                        + " is " + url + " and the value overwrites the one from the property file");
             baseURL = url;
         }
         if (baseURL == null) {
@@ -129,7 +131,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
         }
         queryURL = baseURL + QUERY_SUFFIX;
         baseURL = baseURL + UPLOAD_SUFFIX;
-        log.debug("The OSTI base query is " + baseURL + " and the query url is " + queryURL);
+        log.info("The OSTI base query is " + baseURL + " and the query url is " + queryURL);
     }
 
     /**
