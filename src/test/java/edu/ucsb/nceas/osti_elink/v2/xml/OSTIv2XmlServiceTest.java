@@ -31,10 +31,10 @@ public class OSTIv2XmlServiceTest {
     private Properties props;
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
-        new EnvironmentVariablesRule("osti.token", null);
+        new EnvironmentVariablesRule("osti_token", null);
     @Rule
     public EnvironmentVariablesRule environmentVariablesURLRule =
-        new EnvironmentVariablesRule("guid.doi.baseurl", null);
+        new EnvironmentVariablesRule("guid_doi_baseurl", null);
 
     @Before
     public void setUp() throws Exception {
@@ -52,7 +52,7 @@ public class OSTIv2XmlServiceTest {
      */
     @Test
     public void testLoadTokenFromTokenPath() throws Exception {
-        assertNull(System.getenv("osti.token"));
+        assertNull(System.getenv("osti_token"));
         service.loadToken();
         assertNotEquals(FAKE_TOKEN, service.token);
     }
@@ -64,8 +64,8 @@ public class OSTIv2XmlServiceTest {
     @Test
     public void testLoadTokenFromEnv() throws Exception {
         // Set the env variable
-        environmentVariablesRule.set("osti.token", FAKE_TOKEN);
-        assertEquals(FAKE_TOKEN, System.getenv("osti.token"));
+        environmentVariablesRule.set("osti_token", FAKE_TOKEN);
+        assertEquals(FAKE_TOKEN, System.getenv("osti_token"));
         service.loadToken();
         assertEquals(FAKE_TOKEN, service.token);
     }
@@ -79,8 +79,8 @@ public class OSTIv2XmlServiceTest {
         assertEquals(testBaseURL + "/" + "elink2xml/upload", service.getBaseUrl());
         assertEquals(testBaseURL + "/" + "elink2api", service.getQueryURL());
         // Set the env variable
-        environmentVariablesURLRule.set("guid.doi.baseurl", "https://foo.com");
-        assertEquals("https://foo.com", System.getenv("guid.doi.baseurl"));
+        environmentVariablesURLRule.set("guid_doi_baseurl", "https://foo.com");
+        assertEquals("https://foo.com", System.getenv("guid_doi_baseurl"));
         service.constructBaseAndQueryURL();
         assertEquals("https://foo.com" + "/" + "elink2xml/upload", service.getBaseUrl());
         assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryURL());
@@ -141,8 +141,8 @@ public class OSTIv2XmlServiceTest {
     @Test
     public void testGetMetadataWithInvalidToken() throws Exception {
         // Set the env variable
-        environmentVariablesRule.set("osti.token", FAKE_TOKEN);
-        assertEquals(FAKE_TOKEN, System.getenv("osti.token"));
+        environmentVariablesRule.set("osti_token", FAKE_TOKEN);
+        assertEquals(FAKE_TOKEN, System.getenv("osti_token"));
         service.loadToken();
         assertEquals(FAKE_TOKEN, service.token);
         String identifier = "doi:10.15485/2304391";

@@ -23,7 +23,7 @@ public class OSTIServiceFactoryTest {
     private static final String v2ClassName = "edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService";
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
-        new EnvironmentVariablesRule("ostiService.className", null);
+        new EnvironmentVariablesRule("ostiService_className", null);
 
     /**
      * Test the getProperty method
@@ -86,7 +86,7 @@ public class OSTIServiceFactoryTest {
     @Test
     public void testGetOSTIV1ServiceFromEnv() throws Exception {
         // env set the variable v1
-        environmentVariablesRule.set("ostiService.className", v1ClassName);
+        environmentVariablesRule.set("ostiService_className", v1ClassName);
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
         properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");

@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 public class OSTIElinkClient {
     public static final String USER_NAME_PROPERTY = "guid.doi.username";
     public static final String PASSWORD_PROPERTY = "guid.doi.password";
-    public static final String BASE_URL_PROPERTY = "guid.doi.baseurl";
+    public static final String BASE_URL_PROPERTY = "guid_doi_baseurl";
     private OSTIElinkErrorAgent errorAgent = null;
     private OSTIElinkService service = null;
     private ExecutorService executor = null;

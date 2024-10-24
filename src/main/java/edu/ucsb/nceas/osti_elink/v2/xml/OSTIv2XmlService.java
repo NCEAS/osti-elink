@@ -24,7 +24,7 @@ import java.util.Properties;
  * This class represents the service for v2xml
  */
 public class OSTIv2XmlService extends OSTIElinkService {
-    public static final String OSTI_TOKEN = "osti.token";
+    public static final String OSTI_TOKEN = "osti_token";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
     private static final String QUERY_SUFFIX = "elink2api";

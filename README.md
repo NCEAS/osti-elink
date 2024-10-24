@@ -13,14 +13,14 @@ Notes for deploying the library supporting the v2xml API
 In addition to the file replacements mentioned above, configure three additional settings:
 1. Base URL Configuration 
     - You can configure the base URL by setting the property `guid.doi.baseurl` in the
-      `metacat.properties` file or by setting an environment variable named `guid.doi.baseurl`. The
+      `metacat.properties` file or by setting an environment variable named `guid_doi_baseurl`. The
       environment variable will override the property file setting.
     - Its value should be in the format: https://www.osti.gov
 2. Service Class Name Configuration:
-    - Set the environment variable `ostiService.className` to the value
+    - Set the environment variable `ostiService_className` to the value
       `edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService`
 3. Token Configuration:
-    - Set the environment variable `osti.token` with the appropriate token value
+    - Set the environment variable `osti_token` with the appropriate token value
 
 Notes for running maven tests
 1. Clone the code from https://github.com/NCEAS/osti-elink

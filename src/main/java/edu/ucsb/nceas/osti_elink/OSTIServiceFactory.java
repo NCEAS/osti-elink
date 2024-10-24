@@ -15,7 +15,7 @@ import java.util.Properties;
  * @author Tao
  */
 public class OSTIServiceFactory {
-    public static final String OSTISERVICE_CLASS_NAME = "ostiService.className";
+    public static final String OSTISERVICE_CLASS_NAME = "ostiService_className";
     private static final Log log = LogFactory.getLog(OSTIServiceFactory.class);
 
     /**
