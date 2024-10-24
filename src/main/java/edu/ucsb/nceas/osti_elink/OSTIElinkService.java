@@ -102,10 +102,11 @@ public abstract class OSTIElinkService {
     public String mintIdentifier(String siteCode) throws OSTIElinkException {
         String identifier = null;
         String minimalMetadata = buildMinimalMetadata(siteCode);
-        log.info("the minmal metadata is " + minimalMetadata);
-        log.info("the base url is " + baseURL);
+        log.debug("the minmal metadata is " + minimalMetadata);
+        log.debug("the base url is " + baseURL);
         byte[] reponse = sendRequest(POST, baseURL, minimalMetadata);
-        log.info("OSTIElinkService.mintIdentifier - the response from the OSTI service is:\n " + new String(reponse));
+        log.debug("OSTIElinkService.mintIdentifier - the response from the OSTI service is:\n "
+                      + new String(reponse));
         Document doc = null;
         try {
             doc = generateDOM(reponse);
@@ -165,10 +166,10 @@ public abstract class OSTIElinkService {
             } catch (UnsupportedEncodingException e) {
                 throw new OSTIElinkException("OSTIElinkService.getMetadata - couldn't encode the query url: " + e.getMessage());
             }
-            log.info("OSTIElinkService.getMetadata - the url sending to the service is " + url);
+            log.debug("OSTIElinkService.getMetadata - the url sending to the service is " + url);
             byte[] response = sendRequest(GET, url);
             metadata = new String(response);
-            log.info("OSTIElinkService.getMetadata - the reponse for id " + identifier + " is\n " + metadata);
+            log.debug("OSTIElinkService.getMetadata - the reponse for id " + identifier + " is\n " + metadata);
             if (metadata == null || metadata.trim().equals("")) {
                 throw new OSTIElinkNotFoundException("OSTIElinkService.getMetadata - the reponse is blank. So we can't find the identifier " + 
                                                       identifier + ", which type is " + type);
@@ -212,11 +213,11 @@ public abstract class OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataXML) throws OSTIElinkException {
         String ostiId = getOstiId(doi, doiPrefix);// if the doi can't be found, an exception will be thrown.
         String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
-        log.info("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId + 
+        log.debug("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId +
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
         byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
-        log.info("OSTIElinkService.setMetadata - the response from the OSTI service to set metadata for id " + doi + 
-                " is:\n " + new String(reponse));
+        log.debug("OSTIElinkService.setMetadata - the response from the OSTI service to set "
+                    + "metadata for id " + doi + " is:\n " + new String(reponse));
         Document doc = null;
         String status = null;
         try {
