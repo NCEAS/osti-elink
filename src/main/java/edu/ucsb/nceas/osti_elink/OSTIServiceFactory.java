@@ -38,13 +38,16 @@ public class OSTIServiceFactory {
         if (className == null) {
             try {
                 className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+                log.info("The class name " + className + " is set by the property file ");
             } catch (PropertyNotFound e) {
-                log.debug("We cannot find the " + OSTISERVICE_CLASS_NAME + " in neither the evn "
+                log.info("We cannot find the " + OSTISERVICE_CLASS_NAME + " in neither the evn "
                               + "variable nor the properties file. So we will use the default one: "
                               + "edu.ucsb.nceas.osti_elink.v1.OSTIService");
                 className = "edu.ucsb.nceas.osti_elink.v1.OSTIService";
             }
-
+        } else {
+            log.info("The class name " + className + " is set by the environmental variable "
+                         + OSTISERVICE_CLASS_NAME);
         }
         String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
@@ -53,10 +56,10 @@ public class OSTIServiceFactory {
             String password = getProperty(OSTIElinkClient.PASSWORD_PROPERTY, properties);
 
             service = new OSTIService(userName, password, baseURL);
-            //service.setProperties(properties);
-
+            log.info("The OSTI service class is v1: " + service.getClass().getName());
         } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService")) {
             service = new OSTIv2XmlService(null, null, baseURL, properties);
+            log.info("The OSTI service class is v2xml: " + service.getClass().getName());
         } else {
             throw new ClassNotSupported("OSTIService does not support the class " + className);
         }
