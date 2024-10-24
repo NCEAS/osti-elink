@@ -15,7 +15,7 @@ In addition to the file replacements mentioned above, configure three additional
     - You can configure the base URL by setting the property `guid.doi.baseurl` in the
       `metacat.properties` file or by setting an environment variable named `guid_doi_baseurl`. The
       environment variable will override the property file setting.
-    - Its value should be in the format: https://www.osti.gov
+    - Its value should be in the format: `https://www.osti.gov` (production) or `https://review.osti.gov` (test)
 2. Service Class Name Configuration:
     - Set the environment variable `ostiService_className` to the value
       `edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService`
