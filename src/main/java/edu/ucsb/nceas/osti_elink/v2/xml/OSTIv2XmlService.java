@@ -131,7 +131,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
         }
         queryURL = baseURL + QUERY_SUFFIX;
         baseURL = baseURL + UPLOAD_SUFFIX;
-        log.info("The OSTI base query is " + baseURL + " and the query url is " + queryURL);
+        log.info("The OSTI base url is " + baseURL + " and the query url is " + queryURL);
     }
 
     /**
