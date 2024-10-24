@@ -3,6 +3,8 @@ package edu.ucsb.nceas.osti_elink;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
@@ -28,8 +30,13 @@ public class OSTIElinkErrorAgentTest {
         Properties prop = new Properties();
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.properties")) {
             prop.load(is);
-            username = prop.getProperty("username");
-            password = prop.getProperty("password");
+            String passwordFile = prop.getProperty(OSTIServiceV1Test.PASSWORD_FILE_PROP_NAME);
+            try (InputStream passwordStream = new FileInputStream(new File(passwordFile))) {
+                Properties passwordProp = new Properties();
+                passwordProp.load(passwordStream);
+                username = passwordProp.getProperty(OSTIElinkClient.USER_NAME_PROPERTY);
+                password = passwordProp.getProperty(OSTIElinkClient.PASSWORD_PROPERTY);
+            }
         }
         prop.setProperty(
             OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");

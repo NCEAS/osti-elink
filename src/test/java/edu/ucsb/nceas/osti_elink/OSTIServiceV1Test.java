@@ -1,21 +1,3 @@
-/**
- * This work was created by the National Center for Ecological Analysis and Synthesis
- * at the University of California Santa Barbara (UCSB).
- *
- *   Copyright 2021 Regents of the University of California
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package edu.ucsb.nceas.osti_elink;
 
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
@@ -27,6 +9,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -40,6 +24,7 @@ import java.util.Properties;
  *
  */
 public class OSTIServiceV1Test {
+    public static final String PASSWORD_FILE_PROP_NAME = "ostiService.passwordFilePath";
     private static OSTIElinkService ostiService = null;
     private static String username = "";
     private static String password = "";
@@ -53,9 +38,13 @@ public class OSTIServiceV1Test {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.properties")) {
             Properties prop = new Properties();
             prop.load(is);
-            username = prop.getProperty("username");
-            password = prop.getProperty("password");
-            //System.out.println("the user name is " + username + " and password is " + password);
+            String passwordFile = prop.getProperty(PASSWORD_FILE_PROP_NAME);
+            try (InputStream passwordStream = new FileInputStream(new File(passwordFile))) {
+                Properties passwordProp = new Properties();
+                passwordProp.load(passwordStream);
+                username = passwordProp.getProperty(OSTIElinkClient.USER_NAME_PROPERTY);
+                password = passwordProp.getProperty(OSTIElinkClient.PASSWORD_PROPERTY);
+            }
         }
         ostiService = new OSTIService(username, password, BASEURL);
     }
