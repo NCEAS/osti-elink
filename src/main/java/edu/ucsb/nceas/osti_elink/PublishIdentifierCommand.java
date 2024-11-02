@@ -38,6 +38,7 @@ public abstract class PublishIdentifierCommand {
      * It also will extract the osti_id and url values from the given xml if it is the command
      * @param xml  the xml string which needs to be parsed
      * @return true if it is a publishIdentifier command; otherwise false.
+     * @throws OSTIElinkException
      */
-    public abstract boolean parse(String xml);
+    public abstract boolean parse(String xml) throws OSTIElinkException;
 }
