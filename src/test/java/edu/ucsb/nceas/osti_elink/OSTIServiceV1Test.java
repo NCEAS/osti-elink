@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink;
 
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -354,6 +355,23 @@ public class OSTIServiceV1Test {
         status = ostiService.getStatus(withDOI);
         assertTrue(status.equals("Pending"));
     }
+
+    /**
+     * Test publishIdentifier command, which is special xml document in the setMetadata method.
+     * The client only
+     */
+    @Test
+    public void testPublishIdentifierCommand() throws Exception {
+        String identifier = ostiService.mintIdentifier(null);
+        String siteUrl = "https://data.ess-dive.lbl.gov/view/" + identifier;
+        String command = generatePublishIdentifierCommandWithSiteURL(siteUrl);
+        ostiService.setMetadata(identifier, null, command);
+        String status = ostiService.getStatus(identifier);
+        assertTrue(status.equals("Pending"));
+        String metadata = ostiService.getMetadata(identifier);
+        assertTrue(metadata.contains(siteUrl));
+    }
+
     
     /**
      * Read a input stream object to a string
@@ -371,6 +389,18 @@ public class OSTIServiceV1Test {
             }
         }
         return textBuilder.toString();
+    }
+
+    /**
+     * Generate the publishIdentifier command
+     * @param siteURL the site url will be used in the command
+     * @return the publishIdentifier command in xml format
+     */
+    public static String generatePublishIdentifierCommandWithSiteURL(String siteURL) {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><records><record><site_url>";
+        xml = xml + StringEscapeUtils.escapeXml10(siteURL);
+        xml = xml + "</site_url></record></records>";
+        return xml;
     }
 
 }
