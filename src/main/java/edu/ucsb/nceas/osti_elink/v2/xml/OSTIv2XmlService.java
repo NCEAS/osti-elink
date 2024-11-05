@@ -57,11 +57,12 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws OSTIElinkException
      */
     public OSTIv2XmlService(String username, String password, String baseURL, Properties properties)
-        throws PropertyNotFound, IOException, OSTIElinkException {
+        throws PropertyNotFound, IOException, OSTIElinkException, ParserConfigurationException {
         super(username, password, baseURL);
         this.properties = properties;
         constructBaseAndQueryURL();
         loadToken();
+        publishIdentifierCommand = new PublishIdentifierCommand();
     }
 
     /**

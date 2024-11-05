@@ -7,6 +7,7 @@ import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -30,7 +31,7 @@ public class OSTIServiceFactory {
      */
     public static OSTIElinkService getOSTIElinkService(Properties properties)
         throws IllegalArgumentException, PropertyNotFound, ClassNotFoundException,
-        ClassNotSupported, IOException, OSTIElinkException {
+        ClassNotSupported, IOException, OSTIElinkException, ParserConfigurationException {
         OSTIElinkService service;
         // Get className from the environment variable first. If we can't, read it from the
         // property file.

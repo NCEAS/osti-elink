@@ -216,20 +216,28 @@ public abstract class OSTIElinkService {
         String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
         log.debug("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId +
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
-        byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
-        log.debug("OSTIElinkService.setMetadata - the response from the OSTI service to set "
-                    + "metadata for id " + doi + " is:\n " + new String(reponse));
-        Document doc = null;
-        String status = null;
-        try {
-            doc = generateDOM(reponse);
-            status = getElementValue(doc, STATUS);
-        } catch (Exception e) {
-            log.error("OSTIElinkService.setMetadata - can't get the status of the repsonse:\n" + 
-                       new String(reponse) + "since:\n" + e.getLocalizedMessage());
-        }
-        if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
-            throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
+        if (isPublishIdentifierCommand(newMetadataXML)) {
+            log.info(newMetadataXML + " is a publishIdentifier command and it should be handled "
+                         + "by a different route.");
+            handlePublishIdentifierCommand(newMetadataXML);
+        } else {
+            log.debug("The metadata in the setMetadata method is NOT a publishIdentifier command "
+                          + "and the method just use the regular route.");
+            byte[] reponse = sendRequest(POST, baseURL, newMetadataXML);
+            log.debug("OSTIElinkService.setMetadata - the response from the OSTI service to set "
+                          + "metadata for id " + doi + " is:\n " + new String(reponse));
+            Document doc = null;
+            String status = null;
+            try {
+                doc = generateDOM(reponse);
+                status = getElementValue(doc, STATUS);
+            } catch (Exception e) {
+                log.error("OSTIElinkService.setMetadata - can't get the status of the repsonse:\n" +
+                              new String(reponse) + "since:\n" + e.getLocalizedMessage());
+            }
+            if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
+                throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
+            }
         }
     }
     

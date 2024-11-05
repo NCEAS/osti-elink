@@ -29,6 +29,8 @@ import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 /**
  * A simple client application for the OSTI Elink Service that allows calling applications
  * to set up a connection to the service and maintain that connection across a series of
@@ -72,7 +74,7 @@ public class OSTIElinkClient {
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
         } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
-                 OSTIElinkException e) {
+                 ParserConfigurationException | OSTIElinkException e) {
             log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
             throw new RuntimeException(e);
         }
