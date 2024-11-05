@@ -1,5 +1,6 @@
 package edu.ucsb.nceas.osti_elink.v2.response;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -8,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Junit test class for JsonResponseHandler
@@ -48,5 +51,44 @@ public class JsonResponseHandlerTest {
         String json = "[]";
         String value = JsonResponseHandler.getPathValue(json, "doi");
         assertNull(value);
+    }
+
+    /**
+     * Test the getFirstNodeInArray method
+     * @throws Exception
+     */
+    @Test
+    public void testGetFirstNodeInArray() throws Exception {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/search-osti-id-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            JsonNode node = JsonResponseHandler.getFirstNodeInArray(json);
+            assertEquals("10.15485/2304331", node.get("doi").textValue());
+            assertEquals("R", node.get("workflow_status").textValue());
+            assertNull(node.get("foo"));
+            assertEquals(2304331, node.get("osti_id").intValue());
+        }
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/search-doi-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            JsonNode node = JsonResponseHandler.getFirstNodeInArray(json);
+            assertEquals("10.15485/2304391", node.get("doi").textValue());
+            assertEquals("R", node.get("workflow_status").textValue());
+            assertNull(node.get("foo"));
+            assertEquals(2304391, node.get("osti_id").intValue());
+        }
+        String json = "[]";
+        JsonNode node = JsonResponseHandler.getFirstNodeInArray(json);
+        assertNull(node);
+        json = null;
+        try {
+            node = JsonResponseHandler.getFirstNodeInArray(json);
+            fail("Test can't reach here");
+        } catch (Exception e) {
+            assertTrue(e instanceof IllegalArgumentException);
+        }
+        json = "";
+        node = JsonResponseHandler.getFirstNodeInArray(json);
+        assertNull(node);
     }
 }
