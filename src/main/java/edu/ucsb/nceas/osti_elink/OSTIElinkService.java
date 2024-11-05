@@ -340,7 +340,7 @@ public abstract class OSTIElinkService {
      * @param requestBody the String body to be encoded into the body of the request
      * @return byte[] containing the response body
      */
-    private byte[] sendRequest(int requestType, String uri, String requestBody) throws OSTIElinkException {
+    protected byte[] sendRequest(int requestType, String uri, String requestBody) throws OSTIElinkException {
         HttpUriRequest request = null;
         log.debug("OSTIElinkService.sendRequest - Trying uri: " + uri);
         switch (requestType) {

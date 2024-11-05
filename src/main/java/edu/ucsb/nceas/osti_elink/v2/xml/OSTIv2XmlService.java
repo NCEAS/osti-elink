@@ -28,9 +28,12 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public static final String OSTI_TOKEN = "osti_token";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
-    private static final String QUERY_SUFFIX = "elink2api";
+    protected static final String QUERY_SUFFIX = "elink2api";
+    protected static final String SUBMIT_SUFFIX = "submit";
+    protected static final String RECORDS = "records";
     protected static String token;
     protected static String queryURL;
+    protected static String v2RecordsURL;
 
     /**
      * Constructor. This one will NOT be used.
@@ -60,7 +63,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
         throws PropertyNotFound, IOException, OSTIElinkException, ParserConfigurationException {
         super(username, password, baseURL);
         this.properties = properties;
-        constructBaseAndQueryURL();
+        constructURLs();
         loadToken();
         publishIdentifierCommand = new PublishIdentifierCommand();
     }
@@ -114,12 +117,13 @@ public class OSTIv2XmlService extends OSTIElinkService {
     }
 
     /**
-     * Get base and query url. They both construct from the host name. The host name can be read
-     * either from the environmental variable guid.doi.baseurl or a property with the same name.
-     * The environmental surpasses the property one.
+     * Construct the base, query and records url. The query and records are v2 api url. They both
+     * construct from the host name. The host name can be read either from the environmental
+     * variable guid.doi.baseurl or a property with the same name. The environmental surpasses
+     * the property one.
      * @throws OSTIElinkException
      */
-    protected void constructBaseAndQueryURL() throws OSTIElinkException {
+    protected void constructURLs() throws OSTIElinkException {
         log.info("The base URL from the property file is " + baseURL);
         String url = System.getenv(OSTIElinkClient.BASE_URL_PROPERTY);
         if (url != null && !url.trim().equals("")) {
@@ -134,8 +138,10 @@ public class OSTIv2XmlService extends OSTIElinkService {
             baseURL = baseURL + "/";
         }
         queryURL = baseURL + QUERY_SUFFIX;
+        v2RecordsURL = queryURL + "/" + RECORDS;
         baseURL = baseURL + UPLOAD_SUFFIX;
-        log.info("The OSTI base url is " + baseURL + " and the query url is " + queryURL);
+        log.info("The OSTI base url is " + baseURL + " , the query url is " + queryURL +" and the"
+                     + " records url is " + v2RecordsURL);
     }
 
     /**
@@ -224,6 +230,10 @@ public class OSTIv2XmlService extends OSTIElinkService {
 
     protected String getQueryURL() {
         return queryURL;
+    }
+
+    protected String getV2RecordsURLURL() {
+        return v2RecordsURL;
     }
 
     @Override

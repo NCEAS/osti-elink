@@ -3,6 +3,8 @@ package edu.ucsb.nceas.osti_elink.v2.xml;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
+import edu.ucsb.nceas.osti_elink.OSTIServiceV1Test;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -81,9 +83,10 @@ public class OSTIv2XmlServiceTest {
         // Set the env variable
         environmentVariablesURLRule.set("guid_doi_baseurl", "https://foo.com");
         assertEquals("https://foo.com", System.getenv("guid_doi_baseurl"));
-        service.constructBaseAndQueryURL();
+        service.constructURLs();
         assertEquals("https://foo.com" + "/" + "elink2xml/upload", service.getBaseUrl());
         assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryURL());
+        assertEquals("https://foo.com" + "/" + "elink2api/records", service.getV2RecordsURLURL());
     }
 
     /**
@@ -269,5 +272,21 @@ public class OSTIv2XmlServiceTest {
                 metadata.contains("\"title\":\"1 - Data from Raczka et al., Interactions "
                                       + "between"));
         }
+    }
+
+    /**
+     * Test publishIdentifier command, which is special xml document in the setMetadata method.
+     * The client only
+     */
+    @Test
+    public void testPublishIdentifierCommand() throws Exception {
+        String identifier = service.mintIdentifier(null);
+        String siteUrl = "https://data.ess-dive.lbl.gov/view/" + identifier;
+        String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
+        service.setMetadata(identifier, null, command);
+        String status = service.getStatus(identifier);
+        assertTrue(status.equals("R"));
+        String metadata = service.getMetadata(identifier);
+        assertTrue(metadata.contains(siteUrl));
     }
 }
