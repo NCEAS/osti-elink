@@ -21,15 +21,21 @@ import java.io.IOException;
  */
 public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishIdentifierCommand {
     private static final Log log = LogFactory.getLog(PublishIdentifierCommand.class);
-    private DocumentBuilder dBuilder;
+    private static DocumentBuilder dBuilder;
+    static {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        try {
+            dBuilder = dbFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Constructor
-     * @throws ParserConfigurationException
      */
-    public PublishIdentifierCommand() throws ParserConfigurationException {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dBuilder = dbFactory.newDocumentBuilder();
+    public PublishIdentifierCommand() {
+
     }
     /**
      * If the xml is a publishIdentifier command, we should use different routine. This method

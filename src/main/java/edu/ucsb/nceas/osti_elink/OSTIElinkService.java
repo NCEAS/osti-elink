@@ -73,7 +73,6 @@ public abstract class OSTIElinkService {
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = "test";
     protected Properties properties = null;
-    protected PublishIdentifierCommand publishIdentifierCommand;
     protected static Log log = LogFactory.getLog(OSTIElinkService.class);
     
     /**
@@ -216,10 +215,11 @@ public abstract class OSTIElinkService {
         String newMetadataXML = addOrReplaceOstiIdToXMLMetadata(ostiId, metadataXML);
         log.debug("OSTIElinkService.setMetadata - the new xml metadata with the osti id " + ostiId +
                             " for the doi identifier " + doi + " is:\n" + newMetadataXML);
-        if (isPublishIdentifierCommand(newMetadataXML)) {
+        PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
+        if (command.parse(newMetadataXML)) {
             log.info(newMetadataXML + " is a publishIdentifier command and it should be handled "
                          + "by a different route.");
-            handlePublishIdentifierCommand(newMetadataXML);
+            handlePublishIdentifierCommand(command.getOstiId(), command.getUrl());
         } else {
             log.debug("The metadata in the setMetadata method is NOT a publishIdentifier command "
                           + "and the method just use the regular route.");
@@ -636,14 +636,7 @@ public abstract class OSTIElinkService {
     /**
      * The method to handle the publishIdentifier action
      */
-    protected abstract void handlePublishIdentifierCommand(String command)
+    protected abstract void handlePublishIdentifierCommand(String ostiId, String siteUrl)
         throws OSTIElinkException;
 
-    /**
-     * Method to determine if the xml command is a publishIdentifier command
-     * @param xmlCommand  the xml will be looked
-     * @return true if it is a publishIdentifier command; otherwise false
-     */
-    protected abstract boolean isPublishIdentifierCommand(String xmlCommand)
-        throws OSTIElinkException;
 }

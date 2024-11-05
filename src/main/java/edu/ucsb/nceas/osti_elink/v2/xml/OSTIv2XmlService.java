@@ -45,7 +45,6 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public OSTIv2XmlService(String username, String password, String baseURL)
         throws ParserConfigurationException {
         super(username, password, baseURL);
-        publishIdentifierCommand = new PublishIdentifierCommand();
     }
 
     /**
@@ -65,7 +64,6 @@ public class OSTIv2XmlService extends OSTIElinkService {
         this.properties = properties;
         constructURLs();
         loadToken();
-        publishIdentifierCommand = new PublishIdentifierCommand();
     }
 
     /**
@@ -237,12 +235,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     }
 
     @Override
-    protected void handlePublishIdentifierCommand(String xmlCommand) throws OSTIElinkException {
+    protected void handlePublishIdentifierCommand(String ostiId, String siteUrl) throws OSTIElinkException {
 
-    }
-
-    @Override
-    protected boolean isPublishIdentifierCommand(String xmlCommand) throws OSTIElinkException {
-        return publishIdentifierCommand.parse(xmlCommand);
     }
 }
