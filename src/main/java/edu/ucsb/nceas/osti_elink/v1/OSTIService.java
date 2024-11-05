@@ -20,6 +20,7 @@ public class OSTIService extends OSTIElinkService {
      */
     public OSTIService(String username, String password, String baseURL) {
         super(username, password, baseURL);
+        publishIdentifierCommand = new PublishIdentifierCommand();
     }
 
     /**
@@ -47,5 +48,17 @@ public class OSTIService extends OSTIElinkService {
             Document doc = generateDOM(metadata.getBytes());
             return getElementValue(doc, OSTI_ID);
         }
+    }
+
+    @Override
+    protected void handlePublishIdentifierCommand(String xmlCommand) {
+        // Do nothing.
+        log.debug("V1 service does nothing in the handlePublishIdentifierCommand since it should "
+                      + "never be called");
+    }
+
+    @Override
+    protected boolean isPublishIdentifierCommand(String xmlCommand) throws OSTIElinkException {
+        return publishIdentifierCommand.parse(xmlCommand);
     }
 }

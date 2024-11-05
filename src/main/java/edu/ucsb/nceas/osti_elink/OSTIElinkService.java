@@ -73,6 +73,7 @@ public abstract class OSTIElinkService {
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = "test";
     protected Properties properties = null;
+    protected PublishIdentifierCommand publishIdentifierCommand;
     protected static Log log = LogFactory.getLog(OSTIElinkService.class);
     
     /**
@@ -624,4 +625,17 @@ public abstract class OSTIElinkService {
         return stringWriter.toString();
     }
 
+    /**
+     * The method to handle the publishIdentifier action
+     */
+    protected abstract void handlePublishIdentifierCommand(String command)
+        throws OSTIElinkException;
+
+    /**
+     * Method to determine if the xml command is a publishIdentifier command
+     * @param xmlCommand  the xml will be looked
+     * @return true if it is a publishIdentifier command; otherwise false
+     */
+    protected abstract boolean isPublishIdentifierCommand(String xmlCommand)
+        throws OSTIElinkException;
 }

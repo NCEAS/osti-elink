@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,8 +39,10 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @param password the password of the account which can access the OSTI service
      * @param baseURL  the url which specifies the location of the OSTI service
      */
-    public OSTIv2XmlService(String username, String password, String baseURL) {
+    public OSTIv2XmlService(String username, String password, String baseURL)
+        throws ParserConfigurationException {
         super(username, password, baseURL);
+        publishIdentifierCommand = new PublishIdentifierCommand();
     }
 
     /**
@@ -220,5 +223,15 @@ public class OSTIv2XmlService extends OSTIElinkService {
 
     protected String getQueryURL() {
         return queryURL;
+    }
+
+    @Override
+    protected void handlePublishIdentifierCommand(String xmlCommand) throws OSTIElinkException {
+
+    }
+
+    @Override
+    protected boolean isPublishIdentifierCommand(String xmlCommand) throws OSTIElinkException {
+        return publishIdentifierCommand.parse(xmlCommand);
     }
 }
