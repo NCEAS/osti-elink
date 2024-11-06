@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 
 /**
  * @author Tao
@@ -56,6 +57,28 @@ public class JsonResponseHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * Parse the response json string to the put or post requests. If the response has the error
+     * attribute, this will throw an exception
+     * method will
+     * @param response the response string (the json format) of the put or post requests
+     */
+    public static void parsePutAndPostResponse(String response) throws OSTIElinkException {
+        if (response == null || response.trim().equals("")) {
+            throw new OSTIElinkException("The response for the request is blank");
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode arrayNode = mapper.readTree(response);
+            if (arrayNode.get("errors") != null) {
+                throw new OSTIElinkException("The request failed since " + response);
+            }
+        } catch (JsonProcessingException e) {
+            throw new OSTIElinkException(
+                "The response for the request is not a valid json string: " + response);
+        }
     }
 
 }

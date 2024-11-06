@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -91,4 +92,45 @@ public class JsonResponseHandlerTest {
         node = JsonResponseHandler.getFirstNodeInArray(json);
         assertNull(node);
     }
+
+    /**
+     * Test the parsePutAndPostResponse method
+     * @throws Exception
+     */
+    @Test
+    public void testParsePutAndPostResponse() throws Exception {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/put-success-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            //The method should work without any exceptions
+            JsonResponseHandler.parsePutAndPostResponse(json);
+        }
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/put-error-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            try {
+                JsonResponseHandler.parsePutAndPostResponse(json);
+                fail("Test can't get there since the parsePutAndPostResponse should throw an "
+                         + "exception");
+            } catch (Exception e) {
+                assertTrue(e instanceof OSTIElinkException);
+            }
+        }
+        String invalidJson = "{\"name: \"John\"}";
+        try {
+            JsonResponseHandler.parsePutAndPostResponse(invalidJson);
+            fail("Test can't get there since the parsePutAndPostResponse should throw an "
+                     + "exception");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkException);
+        }
+        try {
+            JsonResponseHandler.parsePutAndPostResponse(null);
+            fail("Test can't get there since the parsePutAndPostResponse should throw an "
+                     + "exception");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkException);
+        }
+    }
+
 }
