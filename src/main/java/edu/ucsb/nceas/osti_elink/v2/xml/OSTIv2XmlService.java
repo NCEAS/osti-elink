@@ -277,5 +277,8 @@ public class OSTIv2XmlService extends OSTIElinkService {
         String responseStr = new String(response);
         log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
                       + " is:\n " + responseStr);
+        // Parse the response to determine if the request succeeded or failed. If it failed, an
+        // exception will be thrown.
+        JsonResponseHandler.parsePutAndPostResponse(responseStr);
     }
 }
