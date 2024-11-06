@@ -354,7 +354,7 @@ public abstract class OSTIElinkService {
                 StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                 ((HttpPut) request).setEntity(myEntity);
             }
-            setHeaders(request);
+            setHeaders(request, uri);
             break;
         case POST:
             request = new HttpPost(uri);
@@ -362,11 +362,11 @@ public abstract class OSTIElinkService {
                 StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                 ((HttpPost) request).setEntity(myEntity);
             }
-            setHeaders(request);
+            setHeaders(request, uri);
             break;
         case DELETE:
             request = new HttpDelete(uri);
-            setHeaders(request);
+            setHeaders(request, uri);
             break;
         default:
             throw new OSTIElinkException("Unrecognized HTTP method requested.");
@@ -391,8 +391,9 @@ public abstract class OSTIElinkService {
      * default method. The setGetHeader is for the http get method.
      * Different version implementations will overwrite this method.
      * @param request  the request will be modified.
+     * @param url  the url will be sent
      */
-    protected abstract void setHeaders(HttpUriRequest request);
+    protected abstract void setHeaders(HttpUriRequest request, String url);
 
     /**
      * This method will add the authorization and other headers for the http get method for the

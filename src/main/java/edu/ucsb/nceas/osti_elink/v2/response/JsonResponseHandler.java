@@ -3,6 +3,7 @@ package edu.ucsb.nceas.osti_elink.v2.response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @author Tao
@@ -46,12 +47,12 @@ public class JsonResponseHandler {
      * @param json  the json string
      * @return the first json array node. It may return null if it can't find it.
      */
-    public static JsonNode getFirstNodeInArray(String json) throws JsonProcessingException {
+    public static ObjectNode getFirstNodeInArray(String json) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode arrayNode = mapper.readTree(json);
         if (arrayNode != null) {
             if (arrayNode.isArray()) {
-                return arrayNode.get(0);
+                return (ObjectNode) arrayNode.get(0);
             }
         }
         return null;

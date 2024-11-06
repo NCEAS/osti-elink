@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.xml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkClient;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
@@ -12,7 +13,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,10 +21,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
- * @author Tao
  * This class represents the service for v2xml
+ * @author Tao
  */
 public class OSTIv2XmlService extends OSTIElinkService {
+    public static final String WORKFLOW_STATUS = "workflow_status";
+    public static final String SITE_URL = "site_url";
     public static final String OSTI_TOKEN = "osti_token";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
@@ -42,8 +44,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @param password the password of the account which can access the OSTI service
      * @param baseURL  the url which specifies the location of the OSTI service
      */
-    public OSTIv2XmlService(String username, String password, String baseURL)
-        throws ParserConfigurationException {
+    public OSTIv2XmlService(String username, String password, String baseURL) {
         super(username, password, baseURL);
     }
 
@@ -59,7 +60,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws OSTIElinkException
      */
     public OSTIv2XmlService(String username, String password, String baseURL, Properties properties)
-        throws PropertyNotFound, IOException, OSTIElinkException, ParserConfigurationException {
+        throws PropertyNotFound, IOException, OSTIElinkException {
         super(username, password, baseURL);
         this.properties = properties;
         constructURLs();
@@ -78,7 +79,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
         String status = null;
         String metadata = getMetadata(doi);
         try {
-            status = JsonResponseHandler.getPathValue(metadata, "workflow_status");
+            status = JsonResponseHandler.getPathValue(metadata, WORKFLOW_STATUS);
         } catch (JsonProcessingException e) {
             throw new OSTIElinkException(e.getMessage());
         }
@@ -145,10 +146,18 @@ public class OSTIv2XmlService extends OSTIElinkService {
     /**
      * Add the bearer token authentication method for the v2 requests
      * @param request  the request needs to be added headers
+     * @param url  the url which will be sent
      */
     @Override
-    protected void setHeaders(HttpUriRequest request) {
-        request.addHeader("Accept", "application/xml");
+    protected void setHeaders(HttpUriRequest request, String url) {
+        if (url.contains(UPLOAD_SUFFIX)) {
+            log.debug(url + "is a v2xml request so it set be application/xml ");
+            request.addHeader("Accept", "application/xml");
+        } else {
+            log.debug(url + "is a v2api json request so it set be application/json ");
+            request.addHeader("Accept", "application/json");
+            request.addHeader("Content-Type", "application/json");
+        }
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
@@ -235,7 +244,38 @@ public class OSTIv2XmlService extends OSTIElinkService {
     }
 
     @Override
-    protected void handlePublishIdentifierCommand(String ostiId, String siteUrl) throws OSTIElinkException {
+    protected void handlePublishIdentifierCommand(String ostiId, String siteUrl)
+        throws OSTIElinkException {
+        //First, query the ostiId from the service
+        String jsonMetadata = getMetadataFromOstiId(ostiId);
+        log.debug("The metadata for osti_id " + ostiId + " is\n" + jsonMetadata);
+        // Extract the record from the metadata (it is a json array)
+        try {
+            ObjectNode record = JsonResponseHandler.getFirstNodeInArray(jsonMetadata);
+            //Manipulate the record - removing the workflow_status and adding the site url
+            record.remove(WORKFLOW_STATUS);
+            record.put(SITE_URL, siteUrl);
+            // Send the modified record back
+            String newMetadata = record.toString();
+            log.debug("The modified metadata (removing workflow_status and adding site_url is\n"
+                          + newMetadata);
+            setJsonMetadata(ostiId, newMetadata);
+        } catch (JsonProcessingException e) {
+            throw new OSTIElinkException(e.getMessage());
+        }
+    }
 
+    /**
+     * Set a new version of metadata (json format) to the given osti id
+     * @param osti_id  the identifier's metadata which will be replaced
+     * @param jsonMetadata  the new metadata in json format
+     * @throws OSTIElinkException
+     */
+    protected void setJsonMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
+        String url = v2RecordsURL + "/" + osti_id + "/" +SUBMIT_SUFFIX;
+        byte[] response = sendRequest(PUT, url, jsonMetadata);
+        String responseStr = new String(response);
+        log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
+                      + " is:\n " + responseStr);
     }
 }

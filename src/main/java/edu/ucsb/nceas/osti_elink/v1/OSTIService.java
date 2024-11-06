@@ -25,16 +25,17 @@ public class OSTIService extends OSTIElinkService {
     /**
      * Add the basic authentication method for the v1 requests
      * @param request  the request needs to be added headers
+     * @param url the url which will be sent
      */
     @Override
-    protected void setHeaders(HttpUriRequest request) {
+    protected void setHeaders(HttpUriRequest request, String url) {
         request.addHeader("Accept", "application/xml");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuthStr));
     }
 
     @Override
     protected void setGetHeaders(HttpUriRequest request) {
-        setHeaders(request);
+        setHeaders(request, null);
     }
 
     @Override
