@@ -280,13 +280,32 @@ public class OSTIv2XmlServiceTest {
      */
     @Test
     public void testPublishIdentifierCommand() throws Exception {
-        String identifier = service.mintIdentifier(null);
-        String siteUrl = "https://data.ess-dive.lbl.gov/view/" + identifier;
+        String orgIdentifier = service.mintIdentifier(null);
+        String identifier = OSTIElinkService.removeDOI(orgIdentifier);
+        int index = 0;
+        String metadata = null;
+        while (index <= MAX_ATTEMPTS) {
+            try {
+                metadata = service.getMetadata(identifier);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(200);
+            }
+            index++;
+        }
+        assertTrue(metadata.contains(identifier));
+        String siteUrl = "https://data.ess-dive.lbl.gov/view/" + orgIdentifier;
         String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
         service.setMetadata(identifier, null, command);
         String status = service.getStatus(identifier);
+        index = 0;
+        while (index <= MAX_ATTEMPTS && !status.equals("R")) {
+            Thread.sleep(200);
+            status = service.getStatus(identifier);
+            index++;
+        }
         assertTrue(status.equals("R"));
-        String metadata = service.getMetadata(identifier);
+        metadata = service.getMetadata(identifier);
         assertTrue(metadata.contains(siteUrl));
     }
 }
