@@ -27,7 +27,7 @@ import java.util.Properties;
 public class OSTIv2XmlService extends OSTIElinkService {
     public static final String WORKFLOW_STATUS = "workflow_status";
     public static final String SITE_URL = "site_url";
-    public static final String OSTI_TOKEN = "osti_token";
+    public static final String OSTI_TOKEN = "METACAT_OSTI_TOKEN";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
     protected static final String QUERY_SUFFIX = "elink2api";

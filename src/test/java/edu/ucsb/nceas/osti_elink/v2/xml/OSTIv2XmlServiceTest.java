@@ -33,7 +33,7 @@ public class OSTIv2XmlServiceTest {
     private Properties props;
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
-        new EnvironmentVariablesRule("osti_token", null);
+        new EnvironmentVariablesRule("METACAT_OSTI_TOKEN", null);
     @Rule
     public EnvironmentVariablesRule environmentVariablesURLRule =
         new EnvironmentVariablesRule("guid_doi_baseurl", null);
@@ -54,7 +54,7 @@ public class OSTIv2XmlServiceTest {
      */
     @Test
     public void testLoadTokenFromTokenPath() throws Exception {
-        assertNull(System.getenv("osti_token"));
+        assertNull(System.getenv("METACAT_OSTI_TOKEN"));
         service.loadToken();
         assertNotEquals(FAKE_TOKEN, service.token);
     }
@@ -66,8 +66,8 @@ public class OSTIv2XmlServiceTest {
     @Test
     public void testLoadTokenFromEnv() throws Exception {
         // Set the env variable
-        environmentVariablesRule.set("osti_token", FAKE_TOKEN);
-        assertEquals(FAKE_TOKEN, System.getenv("osti_token"));
+        environmentVariablesRule.set("METACAT_OSTI_TOKEN", FAKE_TOKEN);
+        assertEquals(FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
         service.loadToken();
         assertEquals(FAKE_TOKEN, service.token);
     }
@@ -144,8 +144,8 @@ public class OSTIv2XmlServiceTest {
     @Test
     public void testGetMetadataWithInvalidToken() throws Exception {
         // Set the env variable
-        environmentVariablesRule.set("osti_token", FAKE_TOKEN);
-        assertEquals(FAKE_TOKEN, System.getenv("osti_token"));
+        environmentVariablesRule.set("METACAT_OSTI_TOKEN", FAKE_TOKEN);
+        assertEquals(FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
         service.loadToken();
         assertEquals(FAKE_TOKEN, service.token);
         String identifier = "doi:10.15485/2304391";
