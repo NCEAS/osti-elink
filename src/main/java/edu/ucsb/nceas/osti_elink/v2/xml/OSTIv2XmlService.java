@@ -199,12 +199,15 @@ public class OSTIv2XmlService extends OSTIElinkService {
                 throw new OSTIElinkException("OSTIv2XmlService.getMetadata - the response is blank"
                                                  + ". It means the token is invalid for looking "
                                                  + identifier + ", which type is " + type);
-            } else if (!metadata.contains(identifier)) {
-                if (metadata.equals("[]")) {
-                    throw new OSTIElinkNotFoundException(
-                        "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
-                            + identifier + ", which type is " + type + " since\n " + metadata);
-                } else {
+            } else if (metadata.equals("[]")) {
+                throw new OSTIElinkNotFoundException(
+                    "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
+                        + identifier + ", which type is " + type + " since\n " + metadata);
+            } else {
+                try {
+                    // Check if it is an error response
+                    JsonResponseHandler.isResponseWithError(metadata);
+                } catch (OSTIElinkException ee) {
                     throw new OSTIElinkException(
                         "OSTIv2XmlService.getMetadata - can't get the metadata for id " + identifier
                             + " since\n " + metadata);
@@ -273,13 +276,19 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws OSTIElinkException
      */
     protected void setJsonMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
-        String url = v2RecordsURL + "/" + osti_id + "/" +SUBMIT_SUFFIX;
-        byte[] response = sendRequest(PUT, url, jsonMetadata);
-        String responseStr = new String(response);
-        log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
-                      + " is:\n " + responseStr);
-        // Parse the response to determine if the request succeeded or failed. If it failed, an
-        // exception will be thrown.
-        JsonResponseHandler.parsePutAndPostResponse(responseStr);
+        try {
+            String url = v2RecordsURL + "/" + osti_id + "/" +SUBMIT_SUFFIX;
+            byte[] response = sendRequest(PUT, url, jsonMetadata);
+            String responseStr = new String(response);
+            log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
+                          + " is:\n " + responseStr);
+            // Parse the response to determine if the request succeeded or failed. If it failed, an
+            // exception will be thrown.
+            JsonResponseHandler.isResponseWithError(responseStr);
+        } catch (OSTIElinkException e) {
+            throw new OSTIElinkException("Can't set the json metadata for osti_id " + osti_id +
+                                             " since " + e.getMessage());
+        }
+
     }
 }

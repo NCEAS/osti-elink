@@ -103,13 +103,13 @@ public class JsonResponseHandlerTest {
             .getResourceAsStream("test-files/put-success-response.json")) {
             String json = IOUtils.toString(is, StandardCharsets.UTF_8);
             //The method should work without any exceptions
-            JsonResponseHandler.parsePutAndPostResponse(json);
+            JsonResponseHandler.isResponseWithError(json);
         }
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/put-error-response.json")) {
             String json = IOUtils.toString(is, StandardCharsets.UTF_8);
             try {
-                JsonResponseHandler.parsePutAndPostResponse(json);
+                JsonResponseHandler.isResponseWithError(json);
                 fail("Test can't get there since the parsePutAndPostResponse should throw an "
                          + "exception");
             } catch (Exception e) {
@@ -118,14 +118,14 @@ public class JsonResponseHandlerTest {
         }
         String invalidJson = "{\"name: \"John\"}";
         try {
-            JsonResponseHandler.parsePutAndPostResponse(invalidJson);
+            JsonResponseHandler.isResponseWithError(invalidJson);
             fail("Test can't get there since the parsePutAndPostResponse should throw an "
                      + "exception");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
         }
         try {
-            JsonResponseHandler.parsePutAndPostResponse(null);
+            JsonResponseHandler.isResponseWithError(null);
             fail("Test can't get there since the parsePutAndPostResponse should throw an "
                      + "exception");
         } catch (Exception e) {

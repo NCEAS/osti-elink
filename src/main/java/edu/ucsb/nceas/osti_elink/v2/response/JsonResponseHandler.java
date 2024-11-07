@@ -60,12 +60,11 @@ public class JsonResponseHandler {
     }
 
     /**
-     * Parse the response json string to the put or post requests. If the response has the error
-     * attribute, this will throw an exception
-     * method will
+     * Parse the response json string to see if it is an error message. If the response is an
+     * error message, it throws an exception.
      * @param response the response string (the json format) of the put or post requests
      */
-    public static void parsePutAndPostResponse(String response) throws OSTIElinkException {
+    public static void isResponseWithError(String response) throws OSTIElinkException {
         if (response == null || response.trim().equals("")) {
             throw new OSTIElinkException("The response for the request is blank");
         }
