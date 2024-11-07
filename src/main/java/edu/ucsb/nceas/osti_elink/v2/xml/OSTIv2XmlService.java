@@ -27,7 +27,8 @@ import java.util.Properties;
 public class OSTIv2XmlService extends OSTIElinkService {
     public static final String WORKFLOW_STATUS = "workflow_status";
     public static final String SITE_URL = "site_url";
-    public static final String OSTI_TOKEN = "METACAT_OSTI_TOKEN";
+    public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
+    public static final String BASE_URL_ENV_NAME = "METACAT_OSTI_BASE_URL";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
     protected static final String QUERY_SUFFIX = "elink2api";
@@ -104,14 +105,14 @@ public class OSTIv2XmlService extends OSTIElinkService {
      * @throws IOException
      */
     protected void loadToken() throws PropertyNotFound, IOException {
-        token = System.getenv(OSTI_TOKEN);
+        token = System.getenv(OSTI_TOKEN_ENV_NAME);
         if (token == null) {
             String token_path = OSTIServiceFactory.getProperty(TOKEN_PATH_PROP_NAME, properties);
             log.info("Can't get the token from the environmental variable OSTI_TOKEN and will "
                           + "read it from a file " + token_path);
             token = FileUtils.readFileToString(new File(token_path), "UTF-8");
         } else {
-            log.info("It got the token from the environmental variable - " + OSTI_TOKEN);
+            log.info("It got the token from the environmental variable - " + OSTI_TOKEN_ENV_NAME);
         }
     }
 
@@ -124,9 +125,9 @@ public class OSTIv2XmlService extends OSTIElinkService {
      */
     protected void constructURLs() throws OSTIElinkException {
         log.info("The base URL from the property file is " + baseURL);
-        String url = System.getenv(OSTIElinkClient.BASE_URL_PROPERTY);
+        String url = System.getenv(BASE_URL_ENV_NAME);
         if (url != null && !url.trim().equals("")) {
-            log.info("The base URL from the env variable " + OSTIElinkClient.BASE_URL_PROPERTY
+            log.info("The base URL from the env variable " + BASE_URL_ENV_NAME
                         + " is " + url + " and the value overwrites the one from the property file");
             baseURL = url;
         }

@@ -36,7 +36,7 @@ public class OSTIv2XmlServiceTest {
         new EnvironmentVariablesRule("METACAT_OSTI_TOKEN", null);
     @Rule
     public EnvironmentVariablesRule environmentVariablesURLRule =
-        new EnvironmentVariablesRule("guid_doi_baseurl", null);
+        new EnvironmentVariablesRule("METACAT_OSTI_BASE_URL", null);
 
     @Before
     public void setUp() throws Exception {
@@ -81,8 +81,8 @@ public class OSTIv2XmlServiceTest {
         assertEquals(testBaseURL + "/" + "elink2xml/upload", service.getBaseUrl());
         assertEquals(testBaseURL + "/" + "elink2api", service.getQueryURL());
         // Set the env variable
-        environmentVariablesURLRule.set("guid_doi_baseurl", "https://foo.com");
-        assertEquals("https://foo.com", System.getenv("guid_doi_baseurl"));
+        environmentVariablesURLRule.set("METACAT_OSTI_BASE_URL", "https://foo.com");
+        assertEquals("https://foo.com", System.getenv("METACAT_OSTI_BASE_URL"));
         service.constructURLs();
         assertEquals("https://foo.com" + "/" + "elink2xml/upload", service.getBaseUrl());
         assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryURL());
