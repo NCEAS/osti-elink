@@ -16,13 +16,13 @@ import java.util.Properties;
  * @author Tao
  */
 public class OSTIServiceFactory {
-    public static final String OSTISERVICE_CLASSNAME_PROPERTY = "ostiService_className";
+    public static final String OSTISERVICE_CLASSNAME_PROPERTY = "ostiService.className";
     public static final String OSTISERVICE_CLASSNAME_ENV_NAME = "METACAT_OSTI_SERVICE_CLASS_NAME";
     private static final Log log = LogFactory.getLog(OSTIServiceFactory.class);
 
     /**
      * Get the OSTIElinService instance based on the environment variables and given properties.
-     * The environmental variable of ostiService.className overwrites the property in the file.
+     * The environmental variable of METACAT_OSTI_SERVICE_CLASS_NAME overwrites the property in the file.
      * @param properties  the configuration determining the class instances
      * @return an OSTIElinkService instance
      * @throws IllegalArgumentException
