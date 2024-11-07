@@ -61,7 +61,8 @@ public class JsonResponseHandler {
 
     /**
      * Parse the response json string to see if it is an error message. If the response is an
-     * error message, it throws an exception.
+     * error message, it throws an exception. Note: The null or blank responses are considered
+     * the error response. But some requests do consider blank responses is a success.
      * @param response the response string (the json format) of the put or post requests
      */
     public static void isResponseWithError(String response) throws OSTIElinkException {
