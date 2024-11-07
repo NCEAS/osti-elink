@@ -5,7 +5,7 @@ Wrapper library for managing DOIs through OSTI Elink
 For more information, see: https://www.osti.gov/elink/
 
 ### Notes for deploying the library supporting the v1 API:
-1. Maintain the same configuration as the previous release
+1. Maintain the same Metacat configuration as the previous release
 2. Replace the metacat/WEB-INF/lib/osti-elink-1.0.0.jar file with osti-elink-2.0.0.jar
 3. Replace the metacat/style/common/osti/eml2osti.xsl file with the new version
 
