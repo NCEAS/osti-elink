@@ -25,7 +25,7 @@ import java.util.Properties;
  *
  */
 public class OSTIServiceV1Test {
-    public static final String PASSWORD_FILE_PROP_NAME = "ostiService.passwordFilePath";
+    public static final String PASSWORD_FILE_PROP_NAME = "ostiService.v1.passwordFilePath";
     private static OSTIElinkService ostiService = null;
     private static String username = "";
     private static String password = "";

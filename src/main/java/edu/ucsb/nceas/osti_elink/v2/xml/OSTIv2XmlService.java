@@ -29,7 +29,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public static final String SITE_URL = "site_url";
     public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
     public static final String BASE_URL_ENV_NAME = "METACAT_OSTI_BASE_URL";
-    public static final String TOKEN_PATH_PROP_NAME = "ostiService.tokenPath";
+    public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
     private static final String UPLOAD_SUFFIX = "elink2xml/upload";
     protected static final String QUERY_SUFFIX = "elink2api";
     protected static final String SUBMIT_SUFFIX = "submit";
