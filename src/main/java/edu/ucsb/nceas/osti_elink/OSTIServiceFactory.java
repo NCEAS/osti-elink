@@ -16,7 +16,8 @@ import java.util.Properties;
  * @author Tao
  */
 public class OSTIServiceFactory {
-    public static final String OSTISERVICE_CLASS_NAME = "ostiService_className";
+    public static final String OSTISERVICE_CLASSNAME_PROPERTY = "ostiService_className";
+    public static final String OSTISERVICE_CLASSNAME_ENV_NAME = "METACAT_OSTI_SERVICE_CLASS_NAME";
     private static final Log log = LogFactory.getLog(OSTIServiceFactory.class);
 
     /**
@@ -35,20 +36,21 @@ public class OSTIServiceFactory {
         OSTIElinkService service;
         // Get className from the environment variable first. If we can't, read it from the
         // property file.
-        String className = System.getenv(OSTISERVICE_CLASS_NAME);
+        String className = System.getenv(OSTISERVICE_CLASSNAME_ENV_NAME);
         if (className == null) {
             try {
-                className = getProperty(OSTISERVICE_CLASS_NAME, properties);
+                className = getProperty(OSTISERVICE_CLASSNAME_PROPERTY, properties);
                 log.info("The class name " + className + " is set by the property file ");
             } catch (PropertyNotFound e) {
-                log.info("We cannot find the " + OSTISERVICE_CLASS_NAME + " in neither the evn "
-                              + "variable nor the properties file. So we will use the default one: "
-                              + "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+                log.info("We cannot find the OSTI service name from neither the evn variable "
+                             + OSTISERVICE_CLASSNAME_ENV_NAME
+                             + "nor the properties file. So we will use the default one: "
+                             + "edu.ucsb.nceas.osti_elink.v1.OSTIService");
                 className = "edu.ucsb.nceas.osti_elink.v1.OSTIService";
             }
         } else {
             log.info("The class name " + className + " is set by the environmental variable "
-                         + OSTISERVICE_CLASS_NAME);
+                         + OSTISERVICE_CLASSNAME_ENV_NAME);
         }
         String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
         if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {

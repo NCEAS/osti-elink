@@ -31,7 +31,7 @@ public class OSTIElinkClientV2XmlTest {
             prop.load(is);
         }
         prop.setProperty(
-            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, v2ClassName);
+            OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2ClassName);
         OSTIElinkClient.setProperties(prop);
         //Username and password are null
         client = new OSTIElinkClient(null, null, OSTIv2XmlServiceTest.testBaseURL, agent);

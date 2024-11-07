@@ -34,7 +34,8 @@ public class OSTIElinkClientV1Test {
             }
         }
         prop.setProperty(
-            OSTIServiceFactory.OSTISERVICE_CLASS_NAME, "edu.ucsb.nceas.osti_elink.v1.OSTIService");
+            OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY,
+            "edu.ucsb.nceas.osti_elink.v1.OSTIService");
         OSTIElinkClient.setProperties(prop);
         client = new OSTIElinkClient(username, password, OSTIServiceV1Test.BASEURL, agent);
     }
