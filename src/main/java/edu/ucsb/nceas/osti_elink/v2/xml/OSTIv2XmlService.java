@@ -2,7 +2,6 @@ package edu.ucsb.nceas.osti_elink.v2.xml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import edu.ucsb.nceas.osti_elink.OSTIElinkClient;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -30,8 +29,11 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
     public static final String BASE_URL_ENV_NAME = "METACAT_OSTI_BASE_URL";
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
-    private static final String UPLOAD_SUFFIX = "elink2xml/upload";
-    protected static final String QUERY_SUFFIX = "elink2api";
+    public static final String V2XML_CONTEXT_ENV_NAME = "METACAT_OSTI_V2XML_CONTEXT";
+    public static final String V2JSON_CONTEXT_ENV_NAME = "METACAT_OSTI_V2JSON_CONTEXT";
+    private static final String UPLOAD = "/upload";
+    private static String v2XmlContext = "elink2xml";
+    protected static String v2JsonContext = "elink2api";
     protected static final String SUBMIT_SUFFIX = "submit";
     protected static final String RECORDS = "records";
     protected static String token;
@@ -137,9 +139,23 @@ public class OSTIv2XmlService extends OSTIElinkService {
         if (!baseURL.endsWith("/")) {
             baseURL = baseURL + "/";
         }
-        queryURL = baseURL + QUERY_SUFFIX;
+        String xmlContext = System.getenv(V2XML_CONTEXT_ENV_NAME);
+        if (xmlContext != null && !xmlContext.trim().equals("")) {
+            log.info(
+                "The v2XmlContext was overwritten by the env variable " + V2XML_CONTEXT_ENV_NAME
+                    + " with value " + xmlContext);
+            v2XmlContext = xmlContext;
+        }
+        String jsonContext = System.getenv(V2JSON_CONTEXT_ENV_NAME);
+        if (jsonContext != null && !jsonContext.trim().equals("")) {
+            log.info(
+                "The v2JsonContext was overwritten by the env variable " + V2JSON_CONTEXT_ENV_NAME
+                    + " with value " + jsonContext);
+            v2JsonContext = jsonContext;
+        }
+        queryURL = baseURL + v2JsonContext;
         v2RecordsURL = queryURL + "/" + RECORDS;
-        baseURL = baseURL + UPLOAD_SUFFIX;
+        baseURL = baseURL + v2XmlContext + UPLOAD;
         log.info("The OSTI base url is " + baseURL + " , the query url is " + queryURL +" and the"
                      + " records url is " + v2RecordsURL);
     }
@@ -151,7 +167,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
      */
     @Override
     protected void setHeaders(HttpUriRequest request, String url) {
-        if (url.contains(UPLOAD_SUFFIX)) {
+        if (url.contains(v2XmlContext + UPLOAD)) {
             log.debug(url + "is a v2xml request so it set be application/xml ");
             request.addHeader("Accept", "application/xml");
         } else {
