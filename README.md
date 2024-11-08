@@ -10,7 +10,7 @@ For more information, see: https://www.osti.gov/elink/
 3. Replace the metacat/style/common/osti/eml2osti.xsl file with the new version
 
 ### Notes for deploying the library supporting the v2xml API
-In addition to the file replacements mentioned above, configure three additional settings:
+In addition to the file replacements mentioned above, configure four additional settings:
 1. Service Class Name Configuration:
    - Set the environment variable `METACAT_OSTI_SERVICE_CLASS_NAME` to the value
      `edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService`
@@ -21,6 +21,14 @@ In addition to the file replacements mentioned above, configure three additional
     - Its value should be in the format: `https://www.osti.gov` (production) or `https://review.osti.gov` (test)
 3. Token Configuration:
     - Set the environment variable `METACAT_OSTI_TOKEN` with the appropriate token value
+4. Context name configuration (Optional):
+   - Default Context Names: OSTI ensures that the context names `elink2xml` (for the v2 XML API)
+   and `elink2api` (for the v2 JSON API) remain the same across both test and production services.
+   These values are set as defaults in the configuration.
+   - Customizing Context Names: If you need to change these context names, you can configure them
+     through the following environment variables:
+     - METACAT_OSTI_V2XML_CONTEXT for the v2 XML API
+     - METACAT_OSTI_V2JSON_CONTEXT for the v2 JSON API
 
 ### Notes for running maven test
 1. Clone the code from https://github.com/NCEAS/osti-elink
