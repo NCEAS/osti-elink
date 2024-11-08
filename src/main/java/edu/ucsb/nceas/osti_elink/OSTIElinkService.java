@@ -232,11 +232,12 @@ public abstract class OSTIElinkService {
                 doc = generateDOM(reponse);
                 status = getElementValue(doc, STATUS);
             } catch (Exception e) {
-                log.error("OSTIElinkService.setMetadata - can't get the status of the repsonse:\n" +
-                              new String(reponse) + "since:\n" + e.getLocalizedMessage());
+                log.info("OSTIElinkService.setMetadata - can't get the status of the response:\n" +
+                              new String(reponse) + " since the response is not an XML string.");
             }
             if (status == null || !status.equalsIgnoreCase(SUCCESS)) {
-                throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:  " + new String(reponse));
+                throw new OSTIElinkException("OSTIElinkService.setMetadata - Error:\n"
+                                                 + new String(reponse));
             }
         }
     }
