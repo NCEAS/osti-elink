@@ -27,8 +27,8 @@ In addition to the file replacements mentioned above, configure four additional 
    These values are set as defaults in the configuration.
    - Customizing Context Names: If you need to change these context names, you can configure them
      through the following environment variables:
-     - METACAT_OSTI_V2XML_CONTEXT for the v2 XML API
-     - METACAT_OSTI_V2JSON_CONTEXT for the v2 JSON API
+     - `METACAT_OSTI_V2XML_CONTEXT` for the v2 XML API
+     - `METACAT_OSTI_V2JSON_CONTEXT` for the v2 JSON API
 
 ### Notes for running maven test
 1. Clone the code from https://github.com/NCEAS/osti-elink
