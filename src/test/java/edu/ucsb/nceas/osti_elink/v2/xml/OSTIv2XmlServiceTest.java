@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -310,7 +311,6 @@ public class OSTIv2XmlServiceTest {
 
     /**
      * Test publishIdentifier command, which is special xml document in the setMetadata method.
-     * The client only
      */
     @Test
     public void testPublishIdentifierCommand() throws Exception {
@@ -341,5 +341,22 @@ public class OSTIv2XmlServiceTest {
         assertTrue(status.equals("R"));
         metadata = service.getMetadata(identifier);
         assertTrue(metadata.contains(siteUrl));
+        // Try another site url to test the new site url will replace the old one.
+        String newSiteUrl = "https://knb.ecoinformatics/view/" + orgIdentifier;
+        command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
+        service.setMetadata(identifier, null, command);
+        metadata = service.getMetadata(identifier);
+        index = 0;
+        while (index <= MAX_ATTEMPTS && !metadata.contains(newSiteUrl)) {
+            Thread.sleep(200);
+            status = service.getStatus(identifier);
+            index++;
+        }
+        assertTrue(status.equals("R"));
+        metadata = service.getMetadata(identifier);
+        // Old site url should be gone
+        assertFalse(metadata.contains(siteUrl));
+        // New site url should be there
+        assertTrue(metadata.contains(newSiteUrl));
     }
 }
