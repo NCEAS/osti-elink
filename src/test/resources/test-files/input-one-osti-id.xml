@@ -4,7 +4,7 @@
     <site_url>https://data.ess-dive.lbl.gov/view/doi:10.15485/1829502</site_url>
     <osti_id>1523918</osti_id>
     <title>1 - Data from Raczka et al., Interactions between microbial diversity and substrate chemistry determine the fate of carbon in soil, from Elizabeth Woods in Morgantown, West Virginia, USA</title>
-    <doe_contract_nos>SC0019472</doe_contract_nos>
+    <contract_nos>SC0019472</contract_nos>
     <non-doe_contract_nos/>
     <originating_research_org>Quantitative, trait-based microbial ecology to accurately model the impacts of nitrogen deposition on soil carbon cycling in the Anthropocene</originating_research_org>
     <description>File types include: Soil respiration as 13C cumulative respiration from soil incubation experiment, qSIP (quantitative stable isotope probing) data that is "18S apes wide" which is the fungal atom percent excess or how much the fungi took up of the labeled litter and "16S apes wide" which is the bacterial atom percent excess or how much the bacteria took up of the labeled litter, metabolomic data from the incubated soil samples called "Metab Soil Unique Filtered", which is the metabolomic data that had an initial filter from the raw data, and lipidomic data from the incubated soil samples called "All lipids soil".  These files were used according to methods in Raczka et al. 2021 Scientific Reports.  Headers show soil type (Oak, Poplar) and litter type (also called substrate here, which is labeled as no litter (control), poplar, and oak).  This research was done to understand interactions between ecosystem-level processes and microbial diversity that impacts the composition of decomposition products that can form stable soil organic matter.</description>
