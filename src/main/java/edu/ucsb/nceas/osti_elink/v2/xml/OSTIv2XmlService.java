@@ -31,6 +31,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
     public static final String V2XML_CONTEXT_ENV_NAME = "METACAT_OSTI_V2XML_CONTEXT";
     public static final String V2JSON_CONTEXT_ENV_NAME = "METACAT_OSTI_V2JSON_CONTEXT";
+    public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME = "DOI_QUERY_MAX_ATTEMPTS";
     private static final String UPLOAD = "/upload";
     private static String v2XmlContext = "elink2xml";
     protected static String v2JsonContext = "elink2api";
@@ -69,6 +70,20 @@ public class OSTIv2XmlService extends OSTIElinkService {
         this.properties = properties;
         constructURLs();
         loadToken();
+        String maxAttemptsStr = System.getenv(DOI_QUERY_MAX_ATTEMPTS_ENV_NAME);
+        if (maxAttemptsStr != null && !maxAttemptsStr.trim().equals("")) {
+            log.info("The max query attempts from env variable " + DOI_QUERY_MAX_ATTEMPTS_ENV_NAME
+                         + " is " + maxAttemptsStr);
+            try {
+                maxAttempts = Integer.parseInt(maxAttemptsStr);
+            } catch (NumberFormatException e) {
+                log.warn("The max query attempt value specified in the env variable "
+                             + DOI_QUERY_MAX_ATTEMPTS_ENV_NAME + " is not a integer: "
+                             + e.getMessage() + ". So we still use the default value 40.");
+                maxAttempts = 40;
+            }
+
+        }
     }
 
     /**
