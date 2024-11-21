@@ -31,7 +31,8 @@ public class OSTIv2XmlService extends OSTIElinkService {
     public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
     public static final String V2XML_CONTEXT_ENV_NAME = "METACAT_OSTI_V2XML_CONTEXT";
     public static final String V2JSON_CONTEXT_ENV_NAME = "METACAT_OSTI_V2JSON_CONTEXT";
-    public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME = "DOI_QUERY_MAX_ATTEMPTS";
+    public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME =
+        "METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS";
     private static final String UPLOAD = "/upload";
     private static String v2XmlContext = "elink2xml";
     protected static String v2JsonContext = "elink2api";
@@ -300,6 +301,10 @@ public class OSTIv2XmlService extends OSTIElinkService {
 
     protected String getV2RecordsURLURL() {
         return v2RecordsURL;
+    }
+
+    protected int getMaxAttempts() {
+        return maxAttempts;
     }
 
     @Override

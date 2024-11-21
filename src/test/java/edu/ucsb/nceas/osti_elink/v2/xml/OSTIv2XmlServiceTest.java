@@ -45,6 +45,10 @@ public class OSTIv2XmlServiceTest {
     public EnvironmentVariablesRule environmentVariablesJsonContextRule =
         new EnvironmentVariablesRule("METACAT_OSTI_V2JSON_CONTEXT", null);
 
+    @Rule
+    public EnvironmentVariablesRule environmentVariablesMaxQueryAttemptRule =
+        new EnvironmentVariablesRule("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", null);
+
     @Before
     public void setUp() throws Exception {
         props = new Properties();
@@ -358,5 +362,34 @@ public class OSTIv2XmlServiceTest {
         assertFalse(metadata.contains(siteUrl));
         // New site url should be there
         assertTrue(metadata.contains(newSiteUrl));
+    }
+
+    /**
+     * Test the default max query attempts
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultMaxQueryAttempts() throws Exception {
+        assertEquals(40, service.getMaxAttempts());
+    }
+
+    /**
+     * Test the scenario to get the max query attempts from the env variable
+     * @throws Exception
+     */
+    @Test
+    public void testGetMaxQueryAttemptsFromEnv() throws Exception {
+        // An empty string on the env variable doesn't change the default value
+        environmentVariablesMaxQueryAttemptRule.set("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", "");
+        OSTIv2XmlService service2 = new OSTIv2XmlService(null, null, testBaseURL, props);
+        assertEquals(40, service2.getMaxAttempts());
+        // A non-number string on the env variable doesn't change the default value
+        environmentVariablesMaxQueryAttemptRule.set("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", "wer");
+        OSTIv2XmlService service3 = new OSTIv2XmlService(null, null, testBaseURL, props);
+        assertEquals(40, service3.getMaxAttempts());
+        // A number string on the env variable changes the default value
+        environmentVariablesMaxQueryAttemptRule.set("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", "100");
+        OSTIv2XmlService service4 = new OSTIv2XmlService(null, null, testBaseURL, props);
+        assertEquals(100, service4.getMaxAttempts());
     }
 }
