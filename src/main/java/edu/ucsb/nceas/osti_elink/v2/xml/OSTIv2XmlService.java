@@ -39,6 +39,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     protected static String token;
     protected static String queryURL;
     protected static String v2RecordsURL;
+    protected static int maxAttempts = 40; //
 
     /**
      * Constructor. This one will NOT be used.
@@ -79,8 +80,31 @@ public class OSTIv2XmlService extends OSTIElinkService {
      */
     @Override
     public String getStatus(String doi) throws OSTIElinkException {
-        String status = null;
-        String metadata = getMetadata(doi);
+        String status;
+        String metadata = null;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i <= maxAttempts; i++ ) {
+            try {
+                metadata = getMetadata(doi);
+                break;
+            } catch (OSTIElinkNotFoundException e) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException ex) {
+                    log.warn("The thread waiting for the DOI searchable in the getStatus method "
+                                 + "was interrupted " + ex.getMessage());
+                }
+            }
+            if (i == maxAttempts) {
+                throw new OSTIElinkNotFoundException("The library tried " + maxAttempts + " times"
+                                                         + " to query the status of " + doi + " "
+                                                         + "from the OSTI service. However OSTI "
+                                                         + "service still can't find it");
+            }
+        }
+        long end = System.currentTimeMillis();
+        log.warn("It waited " + (end - start)/1000 + " seconds for doi " + doi + " to be "
+                     + "searchable after minting it.");
         try {
             status = JsonResponseHandler.getPathValue(metadata, WORKFLOW_STATUS);
         } catch (JsonProcessingException e) {

@@ -180,20 +180,13 @@ public class OSTIElinkClientV2XmlTest {
         assertTrue(identifier.startsWith("doi:10."));
         identifier = OSTIElinkService.removeDOI(identifier);
         int index = 0;
-        String metadata = null;
-        while (index <= OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
-            try {
-                metadata = client.getMetadata(identifier);
-                break;
-            } catch (Exception e) {
-                Thread.sleep(200);
-            }
-            index++;
-        }
-        assertTrue(metadata.contains(identifier));
-        assertTrue(metadata.contains("\"title\":\"unknown\""));
+
         String status = client.getStatus(identifier);
         assertEquals("Saved", status);
+        String metadata = client.getMetadata(identifier);
+        assertTrue(metadata.contains(identifier));
+        assertTrue(metadata.contains("\"title\":\"unknown\""));
+
 
         // Set the rich metadata without the site url
         try (InputStream is = getClass().getClassLoader()
