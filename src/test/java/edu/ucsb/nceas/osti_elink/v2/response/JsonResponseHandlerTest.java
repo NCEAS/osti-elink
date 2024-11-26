@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -131,6 +133,42 @@ public class JsonResponseHandlerTest {
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
         }
+    }
+
+    /**
+     * Test the isEmptyMethod
+     * @throws Exception
+     */
+    @Test
+    public void testIsEmpty() throws Exception {
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/put-success-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(json);
+            assertFalse(JsonResponseHandler.isEmptyArray(node));
+        }
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/put-error-response.json")) {
+            String json = IOUtils.toString(is, StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(json);
+            assertFalse(JsonResponseHandler.isEmptyArray(node));
+        }
+        JsonNode node = null;
+        assertFalse(JsonResponseHandler.isEmptyArray(node));
+        String json = "[]";
+        ObjectMapper mapper = new ObjectMapper();
+        node = mapper.readTree(json);
+        assertTrue(JsonResponseHandler.isEmptyArray(node));
+        json = "[ ]";
+        mapper = new ObjectMapper();
+        node = mapper.readTree(json);
+        assertTrue(JsonResponseHandler.isEmptyArray(node));
+        json = "{\"name\": \"John\"}";
+        mapper = new ObjectMapper();
+        node = mapper.readTree(json);
+        assertFalse(JsonResponseHandler.isEmptyArray(node));
     }
 
 }

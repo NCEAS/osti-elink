@@ -64,21 +64,36 @@ public class JsonResponseHandler {
      * error message, it throws an exception. Note: The null or blank responses are considered
      * the error response. But some requests do consider blank responses is a success.
      * @param response the response string (the json format) of the put or post requests
+     * @return the JsonNode representing the response which can be parsed again
      */
-    public static void isResponseWithError(String response) throws OSTIElinkException {
+    public static JsonNode isResponseWithError(String response) throws OSTIElinkException {
         if (response == null || response.trim().equals("")) {
             throw new OSTIElinkException("The response for the request is blank");
         }
         ObjectMapper mapper = new ObjectMapper();
+        JsonNode node;
         try {
-            JsonNode arrayNode = mapper.readTree(response);
-            if (arrayNode.get("errors") != null) {
+            node = mapper.readTree(response);
+            if (node.get("errors") != null) {
                 throw new OSTIElinkException("The request failed since " + response);
             }
         } catch (JsonProcessingException e) {
             throw new OSTIElinkException(
                 "The response for the request is not a valid json string: " + response);
         }
+        return node;
+    }
+
+    /**
+     * Determine if the given JsonNode is empty or not
+     * @param node  the node will be checked
+     * @return true if it is empty; otherwise false
+     */
+    public static boolean isEmptyArray(JsonNode node) {
+        if (node != null && node.isArray() && node.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
 }

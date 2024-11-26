@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.xml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
@@ -111,7 +112,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
                                  + "was interrupted " + ex.getMessage());
                 }
             }
-            if (i == maxAttempts) {
+            if (i >= maxAttempts) {
                 throw new OSTIElinkNotFoundException("The library tried " + maxAttempts + " times"
                                                          + " to query the status of " + doi + " "
                                                          + "from the OSTI service. However OSTI "
@@ -255,18 +256,21 @@ public class OSTIv2XmlService extends OSTIElinkService {
                 throw new OSTIElinkException("OSTIv2XmlService.getMetadata - the response is blank"
                                                  + ". It means the token is invalid for looking "
                                                  + identifier + ", which type is " + type);
-            } else if (metadata.equals("[]")) {
-                throw new OSTIElinkNotFoundException(
-                    "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
-                        + identifier + ", which type is " + type + " since\n " + metadata);
             } else {
+                JsonNode node;
                 try {
                     // Check if it is an error response
-                    JsonResponseHandler.isResponseWithError(metadata);
+                    node = JsonResponseHandler.isResponseWithError(metadata);
                 } catch (OSTIElinkException ee) {
                     throw new OSTIElinkException(
                         "OSTIv2XmlService.getMetadata - can't get the metadata for id " + identifier
                             + " since\n " + metadata);
+                }
+                // Am empty array return means not-found
+                if (JsonResponseHandler.isEmptyArray(node)) {
+                    throw new OSTIElinkNotFoundException(
+                        "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
+                            + identifier + ", which type is " + type + " since\n " + metadata);
                 }
             }
         } else {

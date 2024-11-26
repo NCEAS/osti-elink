@@ -206,6 +206,40 @@ public class OSTIv2XmlServiceTest {
     }
 
     /**
+     * Test the mint method with the invalid token
+     * @throws Exception
+     */
+    @Test
+    public void testMintingWithInvalidToken() throws Exception {
+        // Set the env variable
+        environmentVariablesRule.set("METACAT_OSTI_TOKEN", FAKE_TOKEN);
+        assertEquals(FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
+        service.loadToken();
+        assertEquals(FAKE_TOKEN, service.token);
+        try {
+            service.mintIdentifier(null);
+            fail("Test shouldn't get here since the minting should fail because of the invalid "
+                     + "token");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkException);
+        }
+        try {
+            service.mintIdentifier("ESS-DIVE");
+            fail("Test shouldn't get here since the minting should fail because of the invalid "
+                     + "token");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkException);
+        }
+        try {
+            service.mintIdentifier("KNB");
+            fail("Test shouldn't get here since the minting should fail because of the invalid "
+                     + "token");
+        } catch (Exception e) {
+            assertTrue(e instanceof OSTIElinkException);
+        }
+    }
+
+    /**
      * Test the method of getStatus
      * @throws Exception
      */
@@ -213,17 +247,7 @@ public class OSTIv2XmlServiceTest {
     public void testGetStatus() throws Exception {
         String identifier = service.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
-        String status = null;
-        int index = 0;
-        //a new minted doi can't be querable immediately. We should give them some time.
-        while (status == null && index < MAX_ATTEMPTS) {
-            index++;
-            try {
-               status = service.getStatus(identifier);
-            } catch (Exception e) {
-                Thread.sleep(100);
-            }
-        }
+        String status = service.getStatus(identifier);
         assertEquals("Saved", status);
         identifier = "doi:10.15485/2304391";
         status = service.getStatus(identifier);
@@ -234,6 +258,46 @@ public class OSTIv2XmlServiceTest {
             fail("Test shouldn't get here since the doi doesn't exist");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkNotFoundException);
+        }
+    }
+
+    /**
+     * Test the method of setMetadata with the valid token
+     * @throws Exception
+     */
+    @Test
+    public void testSetMetadataWithInvalidToken() throws Exception {
+        String identifier = service.mintIdentifier(null);
+        assertTrue(identifier.startsWith("doi:10."));
+        identifier = OSTIElinkService.removeDOI(identifier);
+        int index = 0;
+        String metadata = null;
+        while (index <= MAX_ATTEMPTS) {
+            try {
+                metadata = service.getMetadata(identifier);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(200);
+            }
+            index++;
+        }
+        assertTrue(metadata.contains(identifier));
+        assertTrue(metadata.contains("\"title\":\"unknown\""));
+
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id.xml")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            // Set the env variable
+            environmentVariablesRule.set("METACAT_OSTI_TOKEN", FAKE_TOKEN);
+            assertEquals(FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
+            service.loadToken();
+            assertEquals(FAKE_TOKEN, service.token);
+            try {
+                service.setMetadata(identifier, null, newMetadata);
+                fail("Test can't reach here");
+            } catch (Exception e) {
+                assertTrue(e instanceof OSTIElinkException);
+            }
         }
     }
 
