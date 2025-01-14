@@ -111,11 +111,9 @@
     </build>
     <distributionManagement>
         <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>jenkins.dataone.org</id>
-            <name>DataONE</name>
-            <url>${url}</url>
-            <layout>default</layout>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/NCEAS/osti-elink</url>
         </repository>
     </distributionManagement>
 </project>
