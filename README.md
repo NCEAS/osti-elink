@@ -10,7 +10,7 @@ For more information, see: https://www.osti.gov/elink/
 3. Replace the metacat/style/common/osti/eml2osti.xsl file with the new version
 
 ### Notes for deploying the library supporting the v2xml API
-In addition to the file replacements mentioned above, configure four additional settings:
+In addition to the file replacements mentioned above, configure five additional settings:
 1. Service Class Name Configuration:
    - Set the environment variable `METACAT_OSTI_SERVICE_CLASS_NAME` to the value
      `edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService`
