@@ -178,7 +178,6 @@ public class OSTIElinkClientV2XmlTest {
         //Mint the doi
         String identifier = client.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
-        System.out.println("the doi is " + identifier);
         identifier = OSTIElinkService.removeDOI(identifier);
         int index = 0;
 
@@ -233,7 +232,8 @@ public class OSTIElinkClientV2XmlTest {
         assertEquals("R", status);
 
         // Reset a new URL by the publish command
-        String newSiteUrl = "https://data.ess-dive.doe.gov/view/" + identifier;
+        String newSiteUrl =
+            "https://knb.ecoinformatics.org/view/urn%3Auuid%3A90dfc355-2f29-4eb5-be9a-b742df13b323";
         publish = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
         client.setMetadata(identifier, publish);
         index = 0;
