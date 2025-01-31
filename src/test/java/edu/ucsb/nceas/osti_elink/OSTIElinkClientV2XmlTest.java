@@ -149,7 +149,7 @@ public class OSTIElinkClientV2XmlTest {
             status = client.getStatus(identifier);
             assertNotEquals("Saved", status);
         }
-        String siteUrl = "https://knb.ecoinformatics/view/" + identifier;
+        String siteUrl = "https://data.ess-dive.lbl.gov/view/" + identifier;
         String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
         client.setMetadata(identifier, command);
         index = 0;
@@ -178,6 +178,7 @@ public class OSTIElinkClientV2XmlTest {
         //Mint the doi
         String identifier = client.mintIdentifier(null);
         assertTrue(identifier.startsWith("doi:10."));
+        System.out.println("the doi is " + identifier);
         identifier = OSTIElinkService.removeDOI(identifier);
         int index = 0;
 
@@ -211,7 +212,8 @@ public class OSTIElinkClientV2XmlTest {
         }
 
         // Publish the object
-        String siteUrl = "https://knb.ecoinformatics/view/" + identifier;
+        String siteUrl =
+            "https://knb.ecoinformatics.org/view/urn%3Auuid%3A1651eeb1-e050-4c78-8410-ec2389ca2363";
         String publish = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
         client.setMetadata(identifier, publish);
         index = 0;
