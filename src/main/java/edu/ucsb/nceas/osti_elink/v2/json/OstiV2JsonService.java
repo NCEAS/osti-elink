@@ -329,7 +329,7 @@ public class OstiV2JsonService extends OSTIElinkService {
      */
     protected void setJsonMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
         try {
-            String url = v2RecordsURL + "/" + osti_id + "/" +SUBMIT_SUFFIX;
+            String url = v2RecordsURL + "/" + osti_id + "/" + SUBMIT_SUFFIX;
             byte[] response = sendRequest(PUT, url, jsonMetadata);
             String responseStr = new String(response);
             log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
