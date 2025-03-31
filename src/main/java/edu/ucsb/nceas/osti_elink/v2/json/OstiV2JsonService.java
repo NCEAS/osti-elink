@@ -46,7 +46,7 @@ public class OstiV2JsonService extends OSTIElinkService {
      * @param password the password of the account which can access the OSTI service
      * @param baseURL  the url which specifies the location of the OSTI service
      */
-    public OSTIv2XmlService(String username, String password, String baseURL) {
+    public OSTIv2JsonService(String username, String password, String baseURL) {
         super(username, password, baseURL);
     }
 
@@ -70,7 +70,7 @@ public class OstiV2JsonService extends OSTIElinkService {
         String maxAttemptsStr = System.getenv(DOI_QUERY_MAX_ATTEMPTS_ENV_NAME);
         if (maxAttemptsStr != null && !maxAttemptsStr.trim().equals("")) {
             log.info("The max query attempts from env variable " + DOI_QUERY_MAX_ATTEMPTS_ENV_NAME
-                    + " is " + maxAttemptsStr);
+                    + " is " + maxAttemptsStr); //todo DOI_QUERY_MAX_ATTEMPTS_ENV_NAME is set to a str above; why isn't this an int?
             try {
                 maxAttempts = Integer.parseInt(maxAttemptsStr);
             } catch (NumberFormatException e) {
@@ -92,12 +92,16 @@ public class OstiV2JsonService extends OSTIElinkService {
      */
     @Override
     public String getStatus(String doi) throws OSTIElinkException {
+        // todo argument doi should be of type DOI instead of String
         String status;
         String metadata = null;
         long start = System.currentTimeMillis();
         for (int i = 0; i <= maxAttempts; i++ ) {
             try {
                 metadata = getMetadata(doi);
+                // todo getStatus() will have to query 'GET' \
+                // 'https://review.osti.gov/elink2api/records?doi=<doi>&rows=25' \
+                // -H 'accept: application/json' and parse JSON response
                 break;
             } catch (OSTIElinkNotFoundException e) {
                 try {

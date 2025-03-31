@@ -133,7 +133,7 @@ public abstract class OSTIElinkService {
      * @throws OSTIElinkException 
      */
     public String getMetadata(String doi) throws OSTIElinkException {
-        return getMetadata(doi, DOI);
+        return getMetadata(doi, DOI); // todo this method with same name specifying doi type should be designed better using DOi as a defined datatype
     }
     
     /**
@@ -158,7 +158,7 @@ public abstract class OSTIElinkService {
     protected String getMetadata(String identifier, String type) throws OSTIElinkException {
         String metadata = null;
         if (identifier != null && !identifier.trim().equals("")) {
-            //we need to remove the doi prefix
+            //todo why do we need to remove the doi prefix
             identifier = removeDOI(identifier);
             String url = null;
             try {
@@ -482,7 +482,7 @@ public abstract class OSTIElinkService {
      */
     public static String removeDOI(String identifier) {
         log.debug("OSTIElinkService.removeDOI - the origial identifier is " + identifier);
-        String doiPrefix = DOI + ":";
+        String doiPrefix = DOI + ":"; // todo DOI probably shouldn't be a constant
         if (identifier!= null) {
             //we need to remove the doi prefix
             if (identifier.startsWith(doiPrefix)) {
