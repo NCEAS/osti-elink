@@ -1,5 +1,8 @@
 package edu.ucsb.nceas.osti_elink.v2.json;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -204,9 +207,6 @@ public class OstiV2JsonService extends OSTIElinkService {
             log.debug(url + "is a v2api json request so it set be application/json ");
             request.addHeader("Accept", "application/json");
             request.addHeader("Content-Type", "application/json")
-        } else {
-            log.debug(url + "is a v2xml request so it set be application/xml ");
-            request.addHeader("Accept", "application/xml");
         }
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
@@ -261,13 +261,13 @@ public class OstiV2JsonService extends OSTIElinkService {
                 // Am empty array return means not-found
                 if (JsonResponseHandler.isEmptyArray(node)) {
                     throw new OSTIElinkNotFoundException(
-                            "OSTIv2XmlService.getMetadata - OSTI can't find the identifier "
+                            "OstiV2JsonService.getMetadata - OSTI can't find the identifier "
                                     + identifier + ", which type is " + type + " since\n " + metadata);
                 }
             }
         } else {
             throw new OSTIElinkException(
-                    "OSTIv2XmlService.getMetadata - the given identifier can't be null or blank.");
+                    "OstiV2JsonService.getMetadata - the given identifier can't be null or blank.");
         }
         return metadata;
     }
