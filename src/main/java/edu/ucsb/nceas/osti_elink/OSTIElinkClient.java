@@ -64,20 +64,20 @@ public class OSTIElinkClient {
         if (properties == null)  {
             loadDefaultPropertyFile();
         }
-        if (username != null) {
-            properties.setProperty(USER_NAME_PROPERTY, username);
-        }
-        if (password != null) {
-            properties.setProperty(PASSWORD_PROPERTY, password);
-        }
-        properties.setProperty(BASE_URL_PROPERTY, baseURL);
-        try {
-            service = OSTIServiceFactory.getOSTIElinkService(properties);
-        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
-                 ParserConfigurationException | OSTIElinkException e) {
-            log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+//        if (username != null) {
+//            properties.setProperty(USER_NAME_PROPERTY, username);
+//        }
+//        if (password != null) {
+//            properties.setProperty(PASSWORD_PROPERTY, password);
+//        }
+//        properties.setProperty(BASE_URL_PROPERTY, baseURL);
+//        try {
+//            service = OSTIServiceFactory.getOSTIElinkService(properties);
+//        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
+//                 ParserConfigurationException | OSTIElinkException e) {
+//            log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
+//            throw new RuntimeException(e);
+//        }
         this.errorAgent = errorAgent;
         startExecutorLoop();
     }
@@ -96,9 +96,9 @@ public class OSTIElinkClient {
      * Set the given properties to the class. This method is for testing only
      * @param properties1  the properties will be used to create the client.
      */
-    public static void setProperties(Properties properties1) {
-        properties = properties1;
-    }
+//    public static void setProperties(Properties properties1) {
+//        properties = properties1;
+//    }
 
     /**
      * Set the meta data for a given identifier. The identifier should already exist in the elink service.
