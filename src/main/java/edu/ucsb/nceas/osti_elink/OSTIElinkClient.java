@@ -40,8 +40,8 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author tao
  */
 public class OSTIElinkClient {
-    public static final String USER_NAME_PROPERTY = "guid.doi.username";
-    public static final String PASSWORD_PROPERTY = "guid.doi.password";
+//    public static final String USER_NAME_PROPERTY = "guid.doi.username";
+//    public static final String PASSWORD_PROPERTY = "guid.doi.password";
     public static final String BASE_URL_PROPERTY = "guid.doi.baseurl";
     private OSTIElinkErrorAgent errorAgent = null;
     private OSTIElinkService service = null;
@@ -52,32 +52,33 @@ public class OSTIElinkClient {
 
     /**
      * Constructor
-     * @param username  the username of an OSTIElink account
-     * @param password  the password of the OSTIElink account
      * @param baseURL  the base url of the OSTIElink service
      * @param errorAgent  the class used to send error message to administers. It can be null.
      *                    If it is null, the error messages will only be logged in the error level.
      * 
      */
-    public OSTIElinkClient(
-        String username, String password, String baseURL, OSTIElinkErrorAgent errorAgent) {
+    public OSTIElinkClient(String baseURL, String token, OSTIElinkErrorAgent errorAgent) {
         if (properties == null)  {
             loadDefaultPropertyFile();
         }
-//        if (username != null) {
-//            properties.setProperty(USER_NAME_PROPERTY, username);
-//        }
-//        if (password != null) {
-//            properties.setProperty(PASSWORD_PROPERTY, password);
-//        }
-//        properties.setProperty(BASE_URL_PROPERTY, baseURL);
-//        try {
-//            service = OSTIServiceFactory.getOSTIElinkService(properties);
-//        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
-//                 ParserConfigurationException | OSTIElinkException e) {
-//            log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
-//            throw new RuntimeException(e);
-//        }
+        properties.setProperty(BASE_URL_PROPERTY, baseURL);
+        try {
+            service = new OSTIElinkService(baseURL, token) {
+                @Override
+                protected String parseOSTIidFromResponse(String metadata, String doi) throws OSTIElinkException {
+                    return null;
+                }
+
+                @Override
+                protected void handlePublishIdentifierCommand(String ostiId, String siteUrl) throws OSTIElinkException {
+
+                }
+            };
+        } catch (PropertyNotFound | ClassNotFoundException | ClassNotSupported | IOException |
+                 ParserConfigurationException | OSTIElinkException e) {
+            log.error("Can't generate the OSTIElinkService instance since " + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
         this.errorAgent = errorAgent;
         startExecutorLoop();
     }
@@ -108,8 +109,8 @@ public class OSTIElinkClient {
      * @param metadata  the new metadata which will be used
      */
     public void setMetadata(String identifier, String metadata) throws InterruptedException {
-        OSTIElinkServiceRequest request =
-                new OSTIElinkServiceRequest(service, OSTIElinkServiceRequest.SETMETADATA, identifier, errorAgent, metadata);
+        OstiMetadataSubmissionTask request =
+                new OstiMetadataSubmissionTask(service, OstiMetadataSubmissionTask.SETMETADATA, identifier, errorAgent, metadata);
         executor.execute(request);
     }
     

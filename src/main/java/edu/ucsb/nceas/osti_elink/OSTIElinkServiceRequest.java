@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * An OSTIElinkServiceRequest request represents the data needed for a single request
+ * An OstiMetadataSubmissionTask request represents the data needed for a single request
  * to the OSTI Elink Service as a Callable task that can be executed
  * within a thread pool, typically provided by an Executor service.  The request  
  * is used within a queue to temporarily store requests before they are processed 
@@ -31,8 +31,8 @@ import org.apache.commons.logging.LogFactory;
  * @author tao
  *
  */
-public class OSTIElinkServiceRequest implements Runnable {
-    public static final int SETMETADATA = 1;
+public class OstiMetadataSubmissionTask implements Runnable {
+//    public static final int SETMETADATA = 1;
     
     private OSTIElinkService service = null;
     private OSTIElinkErrorAgent errorAgent = null;
@@ -40,7 +40,7 @@ public class OSTIElinkServiceRequest implements Runnable {
     private String identifier = null;
     private String metadata = null;
     
-    protected static Log log = LogFactory.getLog(OSTIElinkServiceRequest.class);
+    protected static Log log = LogFactory.getLog(OstiMetadataSubmissionTask.class);
     
     /**
      * Constructor
@@ -50,18 +50,18 @@ public class OSTIElinkServiceRequest implements Runnable {
      * @param errorAgent  the class used to send error message to administers. It can be null.
      *                    If it is null, the error messages will only be logged in the error level.
      */
-    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier, OSTIElinkErrorAgent errorAgent) {
+    protected OstiMetadataSubmissionTask(OSTIElinkService service, String identifier, OSTIElinkErrorAgent errorAgent) {
         if (service == null) {
             throw new IllegalArgumentException("EZIDService argument must not be null.");
         }
-        if (method < 1 || method > 4) {
-            throw new IllegalArgumentException("Service must be an interger value between 1 and 4.");
-        }
+//        if (method < 1 || method > 4) {
+//            throw new IllegalArgumentException("Service must be an interger value between 1 and 4.");
+//        }
         if (identifier == null) {
             throw new IllegalArgumentException("Identifier must not be null.");
         }
         this.service = service;
-        this.method = method;
+//        this.method = method;
         this.identifier = identifier;
         this.errorAgent = errorAgent;
     }
@@ -75,26 +75,26 @@ public class OSTIElinkServiceRequest implements Runnable {
      *                    If it is null, the error messages will only be logged in the error level.
      * @param metadata  the metadata associated with the request
      */
-    protected OSTIElinkServiceRequest(OSTIElinkService service, int method, String identifier, OSTIElinkErrorAgent errorAgent, String metadata) {
-        this(service, method, identifier, errorAgent);
+    protected OstiMetadataSubmissionTask(OSTIElinkService service, String identifier, OSTIElinkErrorAgent errorAgent, String metadata) {
+        this(service, identifier, errorAgent);
         this.metadata = metadata;
     }
     
     public void run() {
-        log.debug("OSTIElinkServiceRequest - Service to execute: " + method + "/" + identifier + "/" + metadata);
+        log.debug("OstiMetadataSubmissionTask - Service to execute: " + method + "/" + identifier + "/" + metadata);
         try {
-            switch (method) {
-                case SETMETADATA:
-                    String prefix = null;
-                    service.setMetadata(identifier, prefix, metadata);
-                    log.debug("Completed CREATE request for: " + identifier);
-                    break;
-                default:
-                    log.warn("OSTIElinkServiceRequest - the request doesn't support this methdo: " + method);
-                    break;
-            }
+//            switch (method) {
+//                case SETMETADATA:
+            String prefix = null;
+            service.setMetadata(identifier, prefix, metadata);
+            log.debug("Completed CREATE request for: " + identifier);
+//                    break;
+//                default:
+            log.warn("OstiMetadataSubmissionTask - the request doesn't support this methdo: " + method);
+//                    break;
+//            }
         } catch (Exception e) {
-            String error = "OSTIElinkServiceRequest.run - the request to OSTI for " + identifier + " failed:\n" + metadata + 
+            String error = "OstiMetadataSubmissionTask.run - the request to OSTI for " + identifier + " failed:\n" + metadata + 
                            "\n *************************************************************\n The response from OSIT is:\n " + 
                             e.getMessage();
             log.error(error);
