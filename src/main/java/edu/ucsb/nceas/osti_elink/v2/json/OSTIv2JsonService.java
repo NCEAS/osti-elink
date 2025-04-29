@@ -1,6 +1,7 @@
 package edu.ucsb.nceas.osti_elink.v2.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -12,6 +13,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class OSTIv2JsonService extends OSTIElinkService {
@@ -135,7 +139,51 @@ public class OSTIv2JsonService extends OSTIElinkService {
      */
     @Override
     protected String getMetadata(String identifier, String type) throws OSTIElinkException {
-        return "";
+        String metadata = null;
+        if (identifier != null && !identifier.trim().equals("")) {
+            //we need to remove the doi prefix
+            identifier = removeDOI(identifier);
+
+            String url = "";
+            String encodedQuery = null;
+            try {
+                encodedQuery = url + type + "=" + URLEncoder.encode(
+                        "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new OSTIElinkException(
+                        "OSTIv2JsonService.getMetadata - couldn't encode the query url: "
+                                + e.getMessage());
+            }
+            log.info("The query sent to get metadata is " + encodedQuery);
+            byte[] response = sendRequest(GET, encodedQuery);
+            metadata = new String(response);
+            log.info("The response for id " + identifier + " is\n " + metadata);
+            if (metadata == null || metadata.trim().equals("")) {
+                throw new OSTIElinkException("OSTIv2JsonService.getMetadata - the response is blank"
+                        + ". It means the token is invalid for looking "
+                        + identifier + ", which type is " + type);
+            } else {
+                JsonNode node;
+                try {
+                    // Check if it is an error response
+                    node = JsonResponseHandler.isResponseWithError(metadata);
+                } catch (OSTIElinkException ee) {
+                    throw new OSTIElinkException(
+                            "OSTIv2JsonService.getMetadata - can't get the metadata for id " + identifier
+                                    + " since\n " + metadata);
+                }
+                // Am empty array return means not-found
+                if (JsonResponseHandler.isEmptyArray(node)) {
+                    throw new OSTIElinkNotFoundException(
+                            "OSTIv2JsonService.getMetadata - OSTI can't find the identifier "
+                                    + identifier + ", which type is " + type + " since\n " + metadata);
+                }
+            }
+        } else {
+            throw new OSTIElinkException(
+                    "OSTIv2XmlService.getMetadata - the given identifier can't be null or blank.");
+        }
+        return metadata;
     }
 
     protected void loadToken() throws PropertyNotFound, IOException {
