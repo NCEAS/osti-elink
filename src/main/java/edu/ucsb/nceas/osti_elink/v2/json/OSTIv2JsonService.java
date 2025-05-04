@@ -2,6 +2,7 @@ package edu.ucsb.nceas.osti_elink.v2.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -9,6 +10,7 @@ import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.File;
@@ -21,6 +23,7 @@ import java.util.Properties;
 public class OSTIv2JsonService extends OSTIElinkService {
 
     public static final String WORKFLOW_STATUS = "workflow_status";
+    public static final String SITE_URL = "site_url";
     public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME =
             "METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS";
     public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
@@ -146,6 +149,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
             String url = "";
             String encodedQuery = null;
+            // build encoded query
             try {
                 encodedQuery = url + type + "=" + URLEncoder.encode(
                         "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
@@ -155,9 +159,14 @@ public class OSTIv2JsonService extends OSTIElinkService {
                                 + e.getMessage());
             }
             log.info("The query sent to get metadata is " + encodedQuery);
+
+            // execute the query
             byte[] response = sendRequest(GET, encodedQuery);
             metadata = new String(response);
             log.info("The response for id " + identifier + " is\n " + metadata);
+
+            // process query response
+            // check for errors; return response if none found
             if (metadata == null || metadata.trim().equals("")) {
                 throw new OSTIElinkException("OSTIv2JsonService.getMetadata - the response is blank"
                         + ". It means the token is invalid for looking "
@@ -181,9 +190,25 @@ public class OSTIv2JsonService extends OSTIElinkService {
             }
         } else {
             throw new OSTIElinkException(
-                    "OSTIv2XmlService.getMetadata - the given identifier can't be null or blank.");
+                    "OSTIv2JsonService.getMetadata - the given identifier can't be null or blank.");
         }
+
+        // no errors found; return response
         return metadata;
+    }
+
+    protected String parseOSTIidFromResponse(String metadata, String doi)
+            throws OSTIElinkException{
+        if (metadata == null || metadata.trim().equals("")) {
+            throw new OSTIElinkException("The service can't parse the blank response to get the "
+                    + "OSTI id for the DOI " + doi);
+        } else {
+            try {
+                return JsonResponseHandler.getPathValue(metadata, OSTI_ID);
+            } catch (JsonProcessingException e) {
+                throw new OSTIElinkException(e.getMessage());
+            }
+        }
     }
 
     protected void loadToken() throws PropertyNotFound, IOException {
@@ -198,23 +223,71 @@ public class OSTIv2JsonService extends OSTIElinkService {
         }
     }
 
-
+//    todo rename method to setPostHEaders?
+//    todo review ifelse clause, simplify
     protected void setHeaders(HttpUriRequest request, String url){
-        return;
+        if(url.contains("elink2apijson")){
+            log.debug("");
+            request.addHeader("Accept", "application/json");
+        } else {
+            log.debug("");
+            request.addHeader("Accept", "application/xml");
+            request.addHeader("Content-Type", "application/xml");
+        }
+        request.addHeader("Authorization", "Bearer " + token);
     }
 
     protected void setGetHeaders(HttpUriRequest request){
-        return;
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
-    protected String parseOSTIidFromResponse(String metadata, String doi)
-            throws OSTIElinkException{
-        return "";
-    }
 
     protected void handlePublishIdentifierCommand(String ostiId, String siteUrl)
-            throws OSTIElinkException{
-        return;
+            throws OSTIElinkException {
+
+        // 1. Get the metadata for the given osti id
+        String jsonMetadata = getMetadataFromOstiId(ostiId);
+        log.debug("The metadata for osti_id " + ostiId + " is\n" + jsonMetadata);
+
+
+        try {
+            // 2. Parse the metadata to get the record
+            ObjectNode record = JsonResponseHandler.getFirstNodeInArray(jsonMetadata);
+
+            //Manipulate the record - removing the workflow_status and adding the site url
+            record.remove(WORKFLOW_STATUS);
+            record.put(SITE_URL, siteUrl);
+            // Send the modified record back
+            String newMetadata = record.toString();
+            log.debug("The modified metadata (removing workflow_status and adding site_url is\n"
+                    + newMetadata);
+            setJsonMetadata(ostiId, newMetadata);
+        } catch (JsonProcessingException e) {
+            throw new OSTIElinkException(e.getMessage());
+        }
+    }
+
+    /**
+     * Set a new version of metadata (json format) to the given osti id
+     * @param osti_id  the identifier's metadata which will be replaced
+     * @param jsonMetadata  the new metadata in json format
+     * @throws OSTIElinkException
+     */
+    protected void setJsonMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
+        try {
+            String queryUrl = "";
+            byte[] response = sendRequest(PUT, queryUrl, jsonMetadata);
+            String responseStr = new String(response);
+            log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
+                    + " is:\n " + responseStr);
+            // Parse the response to determine if the request succeeded or failed. If it failed, an
+            // exception will be thrown.
+            JsonResponseHandler.isResponseWithError(responseStr);
+        } catch (OSTIElinkException e) {
+            throw new OSTIElinkException("Can't set the json metadata for osti_id " + osti_id +
+                    " since " + e.getMessage());
+        }
+
     }
 
 }
