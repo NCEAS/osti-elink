@@ -254,10 +254,12 @@ public class OSTIv2JsonService extends OSTIElinkService {
             // 2. Parse the metadata to get the record
             ObjectNode record = JsonResponseHandler.getFirstNodeInArray(jsonMetadata);
 
-            //Manipulate the record - removing the workflow_status and adding the site url
+            // 3. Prepare metadata for publishing - by replacing workflow_status with site_url
             record.remove(WORKFLOW_STATUS);
             record.put(SITE_URL, siteUrl);
-            // Send the modified record back
+
+            // 4. Call the publish endpoint to send
+            // publish endpoint expects entire metadata with the request
             String newMetadata = record.toString();
             log.debug("The modified metadata (removing workflow_status and adding site_url is\n"
                     + newMetadata);
