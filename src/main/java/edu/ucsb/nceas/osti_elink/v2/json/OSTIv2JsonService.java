@@ -15,31 +15,55 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class OSTIv2JsonService extends OSTIElinkService {
 
-    public static final String WORKFLOW_STATUS = "workflow_status";
-    public static final String SITE_URL = "site_url";
+    // The baseURL specifies the default endpoint for the OSTI v2 JSON API.
+    // It can be overridden by the environment variable METACAT_OSTI_BASE_URL.
+    protected String BASE_URL = "https://www.osti.gov/elink2api/";
+
+    // The name of the environment variable used to specify the base URL for the OSTI service.
+    // This variable can override the default base URL provided in the application configuration.
+    public static final String BASE_URL_ENV_NAME = "METACAT_OSTI_BASE_URL";
+
+    // OSTI_TOKEN_ENV_NAME specifies the environment variable name for the OSTI service token.
+    public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
+    // TOKEN_PATH_PROP_NAME specifies the property name for the file path containing the OSTI service token.
+    public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
+    protected static String token;
+
+    // Specifies the default context path for the OSTI v2 JSON API.
+    // This value can be overridden by the environment variable METACAT_OSTI_V2JSON_CONTEXT.
+    protected static final String v2JsonContext = "elink2api";
+    public static final String V2JSON_CONTEXT_ENV_NAME = "METACAT_OSTI_V2JSON_CONTEXT";
+    // Defines the constant for the "records" endpoint used in OSTI API requests.
+    protected static final String RECORDS = "records";
+    // Holds the constructed query URL for the OSTI v2 JSON API, initialized later based on the base URL and context path.
+    protected String QUERY_URL = null;
+    // Defines the constant for the "records" endpoint used to access all information about DOI records at OSTI.
+    protected static final String DOI_RECORDS_ENDPOINT = "records";
+    // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
+    protected static String FULL_RECORDS_ENDPOINT_URL = null;
+
+
     public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME =
             "METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS";
-    public static final String OSTI_TOKEN_ENV_NAME = "METACAT_OSTI_TOKEN";
-    public static final String TOKEN_PATH_PROP_NAME = "ostiService.v2.tokenFilePath";
     protected static int maxAttempts = 40;
-    protected static String token;
+
+    public static final String WORKFLOW_STATUS = "workflow_status";
+    public static final String SITE_URL = "site_url";
+
 
     /**
      * Constructor. This one will NOT be used.
      *
      * @param username the username of the account which can access the OSTI service
      * @param password the password of the account which can access the OSTI service
-     * @param baseURL  the url which specifies the location of the OSTI service
+     * @param BASE_URL  the url which specifies the location of the OSTI service
      */
-    public OSTIv2JsonService(String username, String password, String baseURL) {
-        super(username, password, baseURL);
+    public OSTIv2JsonService(String username, String password, String BASE_URL) {
+        super(username, password, BASE_URL);
     }
 
     /**
@@ -47,18 +71,18 @@ public class OSTIv2JsonService extends OSTIElinkService {
      *
      * @param username the username of the account which can access the OSTI service
      * @param password the password of the account which can access the OSTI service
-     * @param baseURL  the url which specifies the location of the OSTI service
+     * @param BASE_URL  the url which specifies the location of the OSTI service
      * @param properties  the properties will be used in the OSTI service
      * @throws PropertyNotFound
      * @throws IOException
      * @throws OSTIElinkException
      */
-    public OSTIv2JsonService(String username, String password, String baseURL, Properties properties)
+    public OSTIv2JsonService(String username, String password, String BASE_URL, Properties properties)
             throws PropertyNotFound, IOException, OSTIElinkException {
-        super(username, password, baseURL);
+        super(username, password, BASE_URL);
         this.properties = properties;
 
-        String queryEndpoint = "";
+        String mintDoiEndpoint = "https://review.osti.gov/elink2api/records/save";
         String uploadEndpoint = "";
 
         loadToken();
@@ -147,21 +171,21 @@ public class OSTIv2JsonService extends OSTIElinkService {
             //we need to remove the doi prefix
             identifier = removeDOI(identifier);
 
-            String url = "";
-            String encodedQuery = null;
-            // build encoded query
-            try {
-                encodedQuery = url + type + "=" + URLEncoder.encode(
-                        "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
-            } catch (UnsupportedEncodingException e) {
-                throw new OSTIElinkException(
-                        "OSTIv2JsonService.getMetadata - couldn't encode the query url: "
-                                + e.getMessage());
-            }
-            log.info("The query sent to get metadata is " + encodedQuery);
+            String url = "review.osti.gov/elink2api/records";
+            String queryUrl = url + "/" + identifier;
+//            // build encoded query
+//            try {
+//                queryUrl = url + type + "=" + URLEncoder.encode(
+//                        "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
+//            } catch (UnsupportedEncodingException e) {
+//                throw new OSTIElinkException(
+//                        "OSTIv2JsonService.getMetadata - couldn't encode the query url: "
+//                                + e.getMessage());
+//            }
+            log.info("The query sent to get metadata is " + queryUrl);
 
             // execute the query
-            byte[] response = sendRequest(GET, encodedQuery);
+            byte[] response = sendRequest(GET, queryUrl);
             metadata = new String(response);
             log.info("The response for id " + identifier + " is\n " + metadata);
 
@@ -226,11 +250,11 @@ public class OSTIv2JsonService extends OSTIElinkService {
 //    todo rename method to setPostHEaders?
 //    todo review ifelse clause, simplify
     protected void setHeaders(HttpUriRequest request, String url){
-        if(url.contains("elink2apijson")){
-            log.debug("");
+        if(url.contains("elink2api")){
+            log.debug(url + "is a v2 elink2api json request, so application/json has been added as the header");
             request.addHeader("Accept", "application/json");
         } else {
-            log.debug("");
+            log.debug(url + "is a v2xml request, so application/xml has been added as the header");
             request.addHeader("Accept", "application/xml");
             request.addHeader("Content-Type", "application/xml");
         }
@@ -290,6 +314,55 @@ public class OSTIv2JsonService extends OSTIElinkService {
                     " since " + e.getMessage());
         }
 
+    }
+
+    protected void constructURLs() throws OSTIElinkException {
+        // get the base URL from the property file
+        log.info("The base URL from the property file is " + BASE_URL);
+
+        // get the base URL from the environment variable
+        // overwrites the one from the property file
+        String url = System.getenv(BASE_URL_ENV_NAME);
+        if (url != null && !url.trim().equals("")) {
+            log.info("The base URL from the env variable " + BASE_URL_ENV_NAME
+                    + " is " + url + " and the value overwrites the one from the property file");
+            BASE_URL = url;
+        }
+
+        // error checking for baseURL
+        if (BASE_URL == null) {
+            throw new OSTIElinkException("The base URL for the osti service is null");
+        }
+
+        // baseURL should end with a "/"
+        // baseURL will be "https://www.osti.gov/" in production or "https://review.osti.gov/" in test environments.
+        if (!BASE_URL.endsWith("/")) {
+            BASE_URL = BASE_URL + "/";
+        }
+
+        // example value for queryURL: www.osti.gov/elink2api
+        QUERY_URL = BASE_URL + v2JsonContext;
+        // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
+        // example value for FULL_RECORDS_ENDPOINT_URL: www.osti.gov/elink2api/records
+        FULL_RECORDS_ENDPOINT_URL = QUERY_URL + "/" + DOI_RECORDS_ENDPOINT;
+
+    }
+
+    // methods to access the endpoints
+    protected String getBaseUrl() {
+        return BASE_URL;
+    }
+
+    protected String getQueryUrl() {
+        return QUERY_URL;
+    }
+
+    protected String getRecordsEndpointURL() {
+        return FULL_RECORDS_ENDPOINT_URL;
+    }
+
+    protected int getMaxAttempts() {
+        return maxAttempts;
     }
 
 }

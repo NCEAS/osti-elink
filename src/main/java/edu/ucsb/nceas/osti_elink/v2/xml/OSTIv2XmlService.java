@@ -42,7 +42,7 @@ public class OSTIv2XmlService extends OSTIElinkService {
     protected static String token;
     protected static String queryURL;
     protected static String v2RecordsURL;
-    protected static int maxAttempts = 40; //
+    protected static int maxAttempts = 40;
 
     /**
      * Constructor. This one will NOT be used.
