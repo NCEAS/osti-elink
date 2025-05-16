@@ -16,6 +16,10 @@ import org.apache.http.client.methods.HttpUriRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
+
 
 public class OSTIv2JsonService extends OSTIElinkService {
 
@@ -37,14 +41,29 @@ public class OSTIv2JsonService extends OSTIElinkService {
     // This value can be overridden by the environment variable METACAT_OSTI_V2JSON_CONTEXT.
     protected static final String v2JsonContext = "elink2api";
     public static final String V2JSON_CONTEXT_ENV_NAME = "METACAT_OSTI_V2JSON_CONTEXT";
-    // Defines the constant for the "records" endpoint used in OSTI API requests.
-    protected static final String RECORDS = "records";
-    // Holds the constructed query URL for the OSTI v2 JSON API, initialized later based on the base URL and context path.
-    protected String QUERY_URL = null;
     // Defines the constant for the "records" endpoint used to access all information about DOI records at OSTI.
     protected static final String DOI_RECORDS_ENDPOINT = "records";
-    // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
+    // Parameter for the "save" operation in the records endpoint, used for minting and updating DOI records.
+    protected static final String DOI_RECORDS_ENDPONT_SAVE_PARAMETER = "save";
+    // Parameter for the "submit" operation in the records endpoint, used for publishing DOI records.
+    protected static final String DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER = "submit";
+
+    // Holds the constructed query URL for the OSTI v2 JSON API, initialized later based on the base URL and context path.
+    // Example value: "https://www.osti.gov/elink2api"
+    protected String QUERY_URL = null;
+    // Defines the full URL to access the "records" endpoint in the OSTI API.
+    // Example value: "https://www.osti.gov/elink2api/records"
     protected static String FULL_RECORDS_ENDPOINT_URL = null;
+    protected static String MINT_DOI_ENDPOINT_URL = null;
+    protected static String GET_METADATA_ENDPOINT_URL = null;
+    // Constructed by concatenating  FULL_RECORDS_ENDPOINT_URL with /{id}/submit
+    protected static String SET_METADATA_ENDPOINT_URL = null;
+    // Constructed by concatenating  FULL_RECORDS_ENDPOINT_URL with /{id}/save
+    protected static String UPDATE_METADATA_ENDPOINT_URL = null;
+    // Constructed by concatenating  FULL_RECORDS_ENDPOINT_URL with /{id}/submit
+    protected static String PUBLISH_DOI_ENDPOINT_URL = null;
+
+
 
 
     public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME =
@@ -82,10 +101,10 @@ public class OSTIv2JsonService extends OSTIElinkService {
         super(username, password, BASE_URL);
         this.properties = properties;
 
-        String mintDoiEndpoint = "https://review.osti.gov/elink2api/records/save";
+        String mintDoiEndpoint = "https://review.osti.gov/elink2api/records/save"; // todo
         String uploadEndpoint = "";
 
-        loadToken();
+        loadToken(); // todo
 
         String maxAttemptsStr = System.getenv(DOI_QUERY_MAX_ATTEMPTS_ENV_NAME);
         if (maxAttemptsStr != null && !maxAttemptsStr.trim().equals("")) {
@@ -167,34 +186,38 @@ public class OSTIv2JsonService extends OSTIElinkService {
     @Override
     protected String getMetadata(String identifier, String type) throws OSTIElinkException {
         String metadata = null;
-        if (identifier != null && !identifier.trim().equals("")) {
-            //we need to remove the doi prefix
-            identifier = removeDOI(identifier);
 
-            String url = "review.osti.gov/elink2api/records";
-            String queryUrl = url + "/" + identifier;
-//            // build encoded query
-//            try {
-//                queryUrl = url + type + "=" + URLEncoder.encode(
-//                        "\"" + identifier + "\"", StandardCharsets.UTF_8.toString());
-//            } catch (UnsupportedEncodingException e) {
-//                throw new OSTIElinkException(
-//                        "OSTIv2JsonService.getMetadata - couldn't encode the query url: "
-//                                + e.getMessage());
-//            }
-            log.info("The query sent to get metadata is " + queryUrl);
+        // url for GET metadata request
+        String getMetadataUrl = null;
+
+        // check identifier for errors
+        if (identifier != null && !identifier.trim().equals("")) {
+
+            // Remove the DOI prefix from the identifier to extract the actual DOI
+            String extractedIdentifier = removeDOI(identifier);
+
+            // build encoded query url
+            try {
+                getMetadataUrl = FULL_RECORDS_ENDPOINT_URL + "?" + type + "=" + URLEncoder.encode(
+                        "\"" + extractedIdentifier + "\"", StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new OSTIElinkException(
+                        "OSTIv2JsonService.getMetadata - couldn't encode the getMetadataUrl: "
+                                + e.getMessage());
+            }
+            log.info("The query sent to get metadata is " + getMetadataUrl);
 
             // execute the query
-            byte[] response = sendRequest(GET, queryUrl);
+            byte[] response = sendRequest(GET, getMetadataUrl);
             metadata = new String(response);
-            log.info("The response for id " + identifier + " is\n " + metadata);
+            log.info("The response for id " + extractedIdentifier + " is\n " + metadata);
 
             // process query response
             // check for errors; return response if none found
             if (metadata == null || metadata.trim().equals("")) {
                 throw new OSTIElinkException("OSTIv2JsonService.getMetadata - the response is blank"
                         + ". It means the token is invalid for looking "
-                        + identifier + ", which type is " + type);
+                        + extractedIdentifier + ", which type is " + type);
             } else {
                 JsonNode node;
                 try {
@@ -219,6 +242,41 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
         // no errors found; return response
         return metadata;
+    }
+
+    /**
+     * Set a new version of metadata (json format) to the given osti id
+     * @param osti_id  the identifier's metadata which will be replaced
+     * @param jsonMetadata  the new metadata in json format
+     * @throws OSTIElinkException
+     */
+    protected void setMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
+        String setMetadataUrl = null;
+        try {
+            setMetadataUrl = SET_METADATA_ENDPOINT_URL + "/" + osti_id + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
+            byte[] response = sendRequest(PUT, setMetadataUrl, jsonMetadata);
+            String responseStr = new String(response);
+            log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
+                    + " is:\n " + responseStr);
+            // Parse the response to determine if the request succeeded or failed. If it failed, an
+            // exception will be thrown.
+            JsonResponseHandler.isResponseWithError(responseStr);
+        } catch (OSTIElinkException e) {
+            throw new OSTIElinkException("Can't set the json metadata for osti_id " + osti_id +
+                    " since " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    public String mintIdentifier(String sitecode) throws OSTIElinkException {
+        // todo implement mintIdentifier for v2json
+        return null;
+    }
+
+    @Override
+    protected String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
+        // todo is minimal metadata needed for v2json?
     }
 
     protected String parseOSTIidFromResponse(String metadata, String doi)
@@ -293,29 +351,6 @@ public class OSTIv2JsonService extends OSTIElinkService {
         }
     }
 
-    /**
-     * Set a new version of metadata (json format) to the given osti id
-     * @param osti_id  the identifier's metadata which will be replaced
-     * @param jsonMetadata  the new metadata in json format
-     * @throws OSTIElinkException
-     */
-    protected void setJsonMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
-        try {
-            String queryUrl = "";
-            byte[] response = sendRequest(PUT, queryUrl, jsonMetadata);
-            String responseStr = new String(response);
-            log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
-                    + " is:\n " + responseStr);
-            // Parse the response to determine if the request succeeded or failed. If it failed, an
-            // exception will be thrown.
-            JsonResponseHandler.isResponseWithError(responseStr);
-        } catch (OSTIElinkException e) {
-            throw new OSTIElinkException("Can't set the json metadata for osti_id " + osti_id +
-                    " since " + e.getMessage());
-        }
-
-    }
-
     protected void constructURLs() throws OSTIElinkException {
         // get the base URL from the property file
         log.info("The base URL from the property file is " + BASE_URL);
@@ -340,11 +375,16 @@ public class OSTIv2JsonService extends OSTIElinkService {
             BASE_URL = BASE_URL + "/";
         }
 
-        // example value for queryURL: www.osti.gov/elink2api
+        // example value for QUERY_URL: www.osti.gov/elink2api
         QUERY_URL = BASE_URL + v2JsonContext;
         // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
         // example value for FULL_RECORDS_ENDPOINT_URL: www.osti.gov/elink2api/records
         FULL_RECORDS_ENDPOINT_URL = QUERY_URL + "/" + DOI_RECORDS_ENDPOINT;
+        MINT_DOI_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;
+        GET_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL;
+        SET_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and save parameters to construct complete url /records/{id}/save
+        UPDATE_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and save parameters to construct complete url /records/{id}/save
+        PUBLISH_DOI_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and submit parameters to construct complete url /records/{id}/submit
 
     }
 
