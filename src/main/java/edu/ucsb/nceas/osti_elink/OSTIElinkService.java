@@ -61,15 +61,17 @@ public abstract class OSTIElinkService {
     protected static final int DELETE = 4;
     private static final int CONNECTIONS_PER_ROUTE = 8;
     private static final String minimalMetadataFile = "minimal-osti.xml";
-    private static final String STATUS = "status";
+    protected static final String minimalMetadataFileJson = "minimal-osti.json";
+    protected static final String STATUS = "status";
     private static final String SUCCESS = "SUCCESS";
+    protected static final String SAVED_STATUS = "SA";
     
     private String username = null;
     private String password = null;
     protected String baseURL = "https://www.osti.gov/elink/2416api";
     protected CloseableHttpClient httpClient = null;
     protected byte[] encodedAuthStr = null;
-    private Document minimalMetadataDoc = null;
+    protected Document minimalMetadataDoc = null;
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = "test";
     protected Properties properties = null;

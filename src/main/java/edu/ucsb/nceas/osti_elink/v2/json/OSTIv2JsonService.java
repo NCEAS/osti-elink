@@ -3,6 +3,8 @@ package edu.ucsb.nceas.osti_elink.v2.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
@@ -12,13 +14,20 @@ import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
+
 
 
 public class OSTIv2JsonService extends OSTIElinkService {
@@ -101,10 +110,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
         super(username, password, BASE_URL);
         this.properties = properties;
 
-        String mintDoiEndpoint = "https://review.osti.gov/elink2api/records/save"; // todo
-        String uploadEndpoint = "";
-
-        loadToken(); // todo
+        constructURLs();
+        loadToken();
 
         String maxAttemptsStr = System.getenv(DOI_QUERY_MAX_ATTEMPTS_ENV_NAME);
         if (maxAttemptsStr != null && !maxAttemptsStr.trim().equals("")) {
@@ -196,7 +203,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
             // Remove the DOI prefix from the identifier to extract the actual DOI
             String extractedIdentifier = removeDOI(identifier);
 
-            // build encoded query url
+            // build encoded getMetadata query url
             try {
                 getMetadataUrl = FULL_RECORDS_ENDPOINT_URL + "?" + type + "=" + URLEncoder.encode(
                         "\"" + extractedIdentifier + "\"", StandardCharsets.UTF_8.toString());
@@ -268,15 +275,98 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     }
 
+
     @Override
-    public String mintIdentifier(String sitecode) throws OSTIElinkException {
-        // todo implement mintIdentifier for v2json
-        return null;
+    public String mintIdentifier(String siteCode) throws OSTIElinkException {
+        // mintIdentifier is used to mint a new DOI for the given siteCode
+        String DoiIdentifier = null;
+
+        String minimalMetadata = buildMinimalMetadata(siteCode);
+        log.debug("the minmal metadata is " + minimalMetadata);
+        log.debug("the base url is " + MINT_DOI_ENDPOINT_URL);
+        byte[] response = sendRequest(POST, MINT_DOI_ENDPOINT_URL, minimalMetadata);
+        log.debug("OSTIv2JsonService.mintIdentifier - the response from the OSTI service is:\n "
+                + new String(response));
+
+        // validate that the response is valid json
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(response);
+        } catch (Exception e) {
+            throw new OSTIElinkException("OSTIv2JsonService.mintIdentifier - Error:  " + new String(response));
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response);
+
+            // Check that doi record has "status = SA" (saved) and access the "doi" field
+            if (rootNode.has(STATUS)) {
+                String status = rootNode.get(STATUS).asText();
+                String doi = rootNode.get(DOI).asText();
+                if (status != null && status.equalsIgnoreCase(SAVED_STATUS) && doi != null && !doi.trim().equals("")) {
+                    DoiIdentifier = DOI + ":" + doi;
+                }
+            } else {
+                System.out.println("Status field not found");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return DoiIdentifier;
     }
 
     @Override
     protected String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
         // todo is minimal metadata needed for v2json?
+
+        String metadataStr = null;
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
+            if (is == null) {
+                throw new IOException("Resource not found: " + minimalMetadataFileJson);
+            }
+
+            // Read JSON from input stream into JsonNode
+            JsonNode jsonNode = mapper.readTree(is);
+            // Convert JsonNode back to string and return the response
+            metadataStr = mapper.writeValueAsString(jsonNode);
+        }  catch (IOException e) {
+            throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+        }
+
+//        if (minimalMetadataDoc == null) {
+//            try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
+//                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+//                DocumentBuilder dBuilder;
+//                try {
+//                    dBuilder = dbFactory.newDocumentBuilder();
+//                    minimalMetadataDoc = dBuilder.parse(is);
+//                    originalDefaultSiteCode = getElementValue(minimalMetadataDoc, "site_input_code");
+//                    log.debug("DOIService.buildMinimalMetadata - the original site code in the minimal metadata is " + originalDefaultSiteCode);
+//                } catch (ParserConfigurationException e) {
+//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+//                } catch (SAXException e) {
+//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+//                } catch (IOException e) {
+//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+//                }
+//            } catch (IOException ee) {
+//                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error to read the file: " + ee.getMessage());
+//            }
+//        }
+//        if (siteCode != null && !siteCode.trim().equals("")) {
+//            modifySiteCode(siteCode);
+//        } else if (!originalDefaultSiteCode.equals(currentDefaultSiteCode)) {
+//            //now the user ask the default site code. But the site map value has been updated by another call.
+//            //we need to change back to the original code.
+//            modifySiteCode(originalDefaultSiteCode);
+//        }
+//        metadataStr = serialize(minimalMetadataDoc);
+        return metadataStr;
     }
 
     protected String parseOSTIidFromResponse(String metadata, String doi)
@@ -345,7 +435,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
             String newMetadata = record.toString();
             log.debug("The modified metadata (removing workflow_status and adding site_url is\n"
                     + newMetadata);
-            setJsonMetadata(ostiId, newMetadata);
+            setMetadata(ostiId, newMetadata);
         } catch (JsonProcessingException e) {
             throw new OSTIElinkException(e.getMessage());
         }
