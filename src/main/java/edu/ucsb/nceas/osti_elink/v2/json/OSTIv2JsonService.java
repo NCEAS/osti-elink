@@ -385,7 +385,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     protected void loadToken() throws PropertyNotFound, IOException {
         token = System.getenv(OSTI_TOKEN_ENV_NAME);
-        log.debug("1. OSTIv2JsonService.loadToken(): token: " + token);
+//        log.debug("1. OSTIv2JsonService.loadToken(): token: " + token);
         if (token == null) {
             String token_path = OSTIServiceFactory.getProperty(TOKEN_PATH_PROP_NAME, properties);
             log.info("OSTIv2JsonService.loadToken(): Can't get the token from the environmental variable OSTI_TOKEN and will "
@@ -394,7 +394,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
         } else {
             log.info("OSTIv2JsonService.loadToken(): It got the token from the environmental variable - " + OSTI_TOKEN_ENV_NAME);
         }
-        log.debug("2. OSTIv2JsonService.loadToken(): token: " + token);
+//        log.debug("2. OSTIv2JsonService.loadToken(): token: " + token);
     }
 
 //    todo rename method to setPostHEaders?

@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
  * @author Shalki Shrivastava
  */
 public class OSTIv2JsonServiceTest {
-    public static final String testBaseURL = "https://review.osti.gov";
+    public static final String testBaseURL = "https://review.osti.gov/";
     public static final int MAX_ATTEMPTS = 200;
     private static final String FAKE_TOKEN = "fake_token";
     private OSTIv2JsonService service;
@@ -87,15 +87,15 @@ public class OSTIv2JsonServiceTest {
      */
     @Test
     public void testOverwriteURLByEnv() throws Exception {
-        assertEquals(testBaseURL, service.getBaseUrl());
-        assertEquals(testBaseURL + "/" + "elink2api", service.getQueryUrl());
+        assertEquals(" OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 1. testBaseURL",testBaseURL, service.getBaseUrl());
+        assertEquals("OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 2. queryUrl", testBaseURL + "elink2api", service.getQueryUrl());
         // Set the env variable
         environmentVariablesURLRule.set("METACAT_OSTI_BASE_URL", "https://foo.com");
-        assertEquals("https://foo.com", System.getenv("METACAT_OSTI_BASE_URL"));
+        assertEquals("OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 3. METACAT_OSTI_BASE_URL", "https://foo.com", System.getenv("METACAT_OSTI_BASE_URL"));
         service.constructURLs();
-        assertEquals("https://foo.com", service.getBaseUrl());
-        assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryUrl());
-        assertEquals("https://foo.com" + "/" + "elink2api/records", service.getRecordsEndpointURL());
+        assertEquals("OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 4. base url ","https://foo.com/", service.getBaseUrl());
+        assertEquals("OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 5. query url ", "https://foo.com/elink2api", service.getQueryUrl());
+        assertEquals("OSTIv2JsonServiceTest.testOverwriteURLByEnv(): 6. records endpoint url ", "https://foo.com/elink2api/records", service.getRecordsEndpointURL());
     }
 
     /**
