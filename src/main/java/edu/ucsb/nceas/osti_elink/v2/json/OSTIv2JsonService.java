@@ -34,7 +34,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     // The baseURL specifies the default endpoint for the OSTI v2 JSON API.
     // It can be overridden by the environment variable METACAT_OSTI_BASE_URL.
-    protected String BASE_URL = "https://www.osti.gov/elink2api/";
+    protected String BASE_URL = "https://www.osti.gov";
 
     // The name of the environment variable used to specify the base URL for the OSTI service.
     // This variable can override the default base URL provided in the application configuration.
@@ -282,8 +282,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
         String DoiIdentifier = null;
 
         String minimalMetadata = buildMinimalMetadata(siteCode);
-        log.debug("the minmal metadata is " + minimalMetadata);
-        log.debug("the base url is " + MINT_DOI_ENDPOINT_URL);
+        log.debug("the minimal metadata is " + minimalMetadata);
+        log.debug("the MINT_DOI_ENDPOINT_URL is " + MINT_DOI_ENDPOINT_URL);
         byte[] response = sendRequest(POST, MINT_DOI_ENDPOINT_URL, minimalMetadata);
         log.debug("OSTIv2JsonService.mintIdentifier - the response from the OSTI service is:\n "
                 + new String(response));
@@ -385,28 +385,32 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     protected void loadToken() throws PropertyNotFound, IOException {
         token = System.getenv(OSTI_TOKEN_ENV_NAME);
+        log.debug("1. OSTIv2JsonService.loadToken(): token: " + token);
         if (token == null) {
             String token_path = OSTIServiceFactory.getProperty(TOKEN_PATH_PROP_NAME, properties);
-            log.info("Can't get the token from the environmental variable OSTI_TOKEN and will "
+            log.info("OSTIv2JsonService.loadToken(): Can't get the token from the environmental variable OSTI_TOKEN and will "
                     + "read it from a file " + token_path);
             token = FileUtils.readFileToString(new File(token_path), "UTF-8");
         } else {
-            log.info("It got the token from the environmental variable - " + OSTI_TOKEN_ENV_NAME);
+            log.info("OSTIv2JsonService.loadToken(): It got the token from the environmental variable - " + OSTI_TOKEN_ENV_NAME);
         }
+        log.debug("2. OSTIv2JsonService.loadToken(): token: " + token);
     }
 
 //    todo rename method to setPostHEaders?
 //    todo review ifelse clause, simplify
     protected void setHeaders(HttpUriRequest request, String url){
-        if(url.contains("elink2api")){
-            log.debug(url + "is a v2 elink2api json request, so application/json has been added as the header");
+        if(url.contains("elink2api")) {
+            log.debug(url + " is a v2 elink2api json request, so application/json has been added as the header");
             request.addHeader("Accept", "application/json");
-        } else {
-            log.debug(url + "is a v2xml request, so application/xml has been added as the header");
-            request.addHeader("Accept", "application/xml");
-            request.addHeader("Content-Type", "application/xml");
         }
+//        } else {
+//            log.debug(url + "is a v2xml request, so application/xml has been added as the header");
+//            request.addHeader("Accept", "application/xml");
+//            request.addHeader("Content-Type", "application/xml");
+//        }
         request.addHeader("Authorization", "Bearer " + token);
+//        log.debug("OSTIv2JsonService.setHeaders(): request:" + request + " token: " + request.getFirstHeader("Authorization"));
     }
 
     protected void setGetHeaders(HttpUriRequest request){
@@ -448,10 +452,12 @@ public class OSTIv2JsonService extends OSTIElinkService {
         // get the base URL from the environment variable
         // overwrites the one from the property file
         String url = System.getenv(BASE_URL_ENV_NAME);
+        log.debug("yayyy url is " + url);
         if (url != null && !url.trim().equals("")) {
             log.info("The base URL from the env variable " + BASE_URL_ENV_NAME
                     + " is " + url + " and the value overwrites the one from the property file");
             BASE_URL = url;
+
         }
 
         // error checking for baseURL
@@ -470,6 +476,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
         // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
         // example value for FULL_RECORDS_ENDPOINT_URL: www.osti.gov/elink2api/records
         FULL_RECORDS_ENDPOINT_URL = QUERY_URL + "/" + DOI_RECORDS_ENDPOINT;
+        // example value for MINT_DOI_ENDPOINT_URL: www.osti.gov/elink2api/records/save
         MINT_DOI_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;
         GET_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL;
         SET_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and save parameters to construct complete url /records/{id}/save

@@ -377,6 +377,22 @@ public abstract class OSTIElinkService {
         byte[] body = null;
         try {
             HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+            log.debug("OSTIElinkService.sendRequest() - Response status: " + statusCode);
+
+            // check status code and throw error if not success
+            if(statusCode < 200 || statusCode > 300)
+            {
+                HttpEntity entity = response.getEntity();
+                String errorBody = "";
+                if (entity != null)
+                {
+                    errorBody = new String(EntityUtils.toByteArray(entity));
+                }
+                throw new OSTIElinkException("HTTP Error" + statusCode + ":" + errorBody);
+            }
+
+
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 body = EntityUtils.toByteArray(entity);

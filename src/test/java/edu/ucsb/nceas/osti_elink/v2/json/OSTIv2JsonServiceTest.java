@@ -38,10 +38,10 @@ public class OSTIv2JsonServiceTest {
         new EnvironmentVariablesRule("METACAT_OSTI_TOKEN", null);
     @Rule
     public EnvironmentVariablesRule environmentVariablesURLRule =
-        new EnvironmentVariablesRule("METACAT_OSTI_BASE_URL", null);
+        new EnvironmentVariablesRule("METACAT_OSTI_BASE_URL", "https://review.osti.gov");
    @Rule
     public EnvironmentVariablesRule environmentVariablesJsonContextRule =
-        new EnvironmentVariablesRule("METACAT_OSTI_V2JSON_CONTEXT", null);
+        new EnvironmentVariablesRule("METACAT_OSTI_V2JSON_CONTEXT", "elink2api");
 
     @Rule
     public EnvironmentVariablesRule environmentVariablesMaxQueryAttemptRule =
@@ -87,13 +87,13 @@ public class OSTIv2JsonServiceTest {
      */
     @Test
     public void testOverwriteURLByEnv() throws Exception {
-        assertEquals(testBaseURL + "/" + "elink2xml/upload", service.getBaseUrl());
+        assertEquals(testBaseURL, service.getBaseUrl());
         assertEquals(testBaseURL + "/" + "elink2api", service.getQueryUrl());
         // Set the env variable
         environmentVariablesURLRule.set("METACAT_OSTI_BASE_URL", "https://foo.com");
         assertEquals("https://foo.com", System.getenv("METACAT_OSTI_BASE_URL"));
         service.constructURLs();
-        assertEquals("https://foo.com" + "/" + "elink2xml/upload", service.getBaseUrl());
+        assertEquals("https://foo.com", service.getBaseUrl());
         assertEquals("https://foo.com" + "/" + "elink2api", service.getQueryUrl());
         assertEquals("https://foo.com" + "/" + "elink2api/records", service.getRecordsEndpointURL());
     }
@@ -216,21 +216,21 @@ public class OSTIv2JsonServiceTest {
         assertEquals(FAKE_TOKEN, service.token);
         try {
             service.mintIdentifier(null);
-            fail("Test shouldn't get here since the minting should fail because of the invalid "
+            fail("testMintingWithInvalidToken(): sitecode=null; Test shouldn't get here since the minting should fail because of the invalid "
                      + "token");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
         }
         try {
             service.mintIdentifier("ESS-DIVE");
-            fail("Test shouldn't get here since the minting should fail because of the invalid "
+            fail("testMintingWithInvalidToken(): sitecode=\"ESS-DIVE\"; Test shouldn't get here since the minting should fail because of the invalid "
                      + "token");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
         }
         try {
             service.mintIdentifier("KNB");
-            fail("Test shouldn't get here since the minting should fail because of the invalid "
+            fail("testMintingWithInvalidToken(): sitecode=\"KNB\"; Test shouldn't get here since the minting should fail because of the invalid "
                      + "token");
         } catch (Exception e) {
             assertTrue(e instanceof OSTIElinkException);
