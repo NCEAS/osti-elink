@@ -79,6 +79,9 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     public static final String WORKFLOW_STATUS = "workflow_status";
     public static final String SITE_URL = "site_url";
+    private JsonNode minimalMetadataNode = null;
+    private String originalDefaultSiteCode = null;
+    private String currentDefaultSiteCode = null;
 
 
     /**
@@ -334,54 +337,74 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     @Override
     protected String buildMinimalMetadata(String siteCode) throws OSTIElinkException {
-        // todo is minimal metadata needed for v2json?
-
         String metadataStr = null;
-
         ObjectMapper mapper = new ObjectMapper();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
-            if (is == null) {
-                throw new IOException("Resource not found: " + minimalMetadataFileJson);
-            }
+        // Load minimal metadata if not already loaded
+        if (minimalMetadataNode == null) {
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
+                if (is == null) {
+                    throw new IOException("Resource not found: " + minimalMetadataFileJson);
+                }
 
-            // Read JSON from input stream into JsonNode
-            JsonNode jsonNode = mapper.readTree(is);
-            // Convert JsonNode back to string and return the response
-            metadataStr = mapper.writeValueAsString(jsonNode);
-        }  catch (IOException e) {
-            throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
+                // Read JSON from input stream into JsonNode
+                minimalMetadataNode = mapper.readTree(is);
+
+                // Store the original site code
+                if (minimalMetadataNode.has("site_ownership_code")) {
+                    originalDefaultSiteCode = minimalMetadataNode.get("site_ownership_code").asText();
+                    currentDefaultSiteCode = originalDefaultSiteCode;
+                    log.debug("OSTIElink.buildMinimalMetadata - Original site code: " + originalDefaultSiteCode);
+                }
+
+            } catch (IOException e) {
+                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error loading file: " + e.getMessage());
+            }
         }
 
-//        if (minimalMetadataDoc == null) {
-//            try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
-//                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-//                DocumentBuilder dBuilder;
-//                try {
-//                    dBuilder = dbFactory.newDocumentBuilder();
-//                    minimalMetadataDoc = dBuilder.parse(is);
-//                    originalDefaultSiteCode = getElementValue(minimalMetadataDoc, "site_input_code");
-//                    log.debug("DOIService.buildMinimalMetadata - the original site code in the minimal metadata is " + originalDefaultSiteCode);
-//                } catch (ParserConfigurationException e) {
-//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
-//                } catch (SAXException e) {
-//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
-//                } catch (IOException e) {
-//                    throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error: " + e.getMessage());
-//                }
-//            } catch (IOException ee) {
-//                throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error to read the file: " + ee.getMessage());
-//            }
-//        }
-//        if (siteCode != null && !siteCode.trim().equals("")) {
-//            modifySiteCode(siteCode);
-//        } else if (!originalDefaultSiteCode.equals(currentDefaultSiteCode)) {
-//            //now the user ask the default site code. But the site map value has been updated by another call.
-//            //we need to change back to the original code.
-//            modifySiteCode(originalDefaultSiteCode);
-//        }
-//        metadataStr = serialize(minimalMetadataDoc);
+        // Modify site code based on parameter
+        if (siteCode != null && !siteCode.trim().equals("")) {
+            modifySiteCode(siteCode);
+        } else if (!originalDefaultSiteCode.equals(currentDefaultSiteCode)) {
+            // Reset to original site code if no specific code requested
+            // but current code has been modified by previous call
+            modifySiteCode(originalDefaultSiteCode);
+        }
+
+        // Convert JsonNode to string
+        try {
+            metadataStr = mapper.writeValueAsString(minimalMetadataNode);
+            log.debug("OSTIElink.buildMinimalMetadata - Final metadata: " + metadataStr);
+        } catch (JsonProcessingException e) {
+            throw new OSTIElinkException("OSTIElink.buildMinimalMetadata - Error serializing JSON: " + e.getMessage());
+        }
+
         return metadataStr;
+    }
+
+    /**
+     * Modify the site ownership code in the minimal metadata JSON
+     * @param siteCode the new site code to set
+     * @throws OSTIElinkException if the modification fails
+     */
+    private void modifySiteCode(String siteCode) throws OSTIElinkException {
+        if (minimalMetadataNode == null) {
+            throw new OSTIElinkException("OSTIElink.modifySiteCode - Minimal metadata not loaded");
+        }
+
+        if (siteCode == null || siteCode.trim().equals("")) {
+            throw new OSTIElinkException("OSTIElink.modifySiteCode - Site code cannot be null or empty");
+        }
+
+        try {
+            // Convert to ObjectNode to allow modifications
+            ObjectNode objectNode = (ObjectNode) minimalMetadataNode;
+            objectNode.put("site_ownership_code", siteCode);
+            currentDefaultSiteCode = siteCode;
+            log.debug("OSTIElink.modifySiteCode - Updated site_ownership_code to: " + siteCode);
+        } catch (Exception e) {
+            throw new OSTIElinkException("OSTIElink.modifySiteCode - Error modifying site code: " + e.getMessage());
+        }
     }
 
     protected String parseOSTIidFromResponse(String metadata, String doi)
