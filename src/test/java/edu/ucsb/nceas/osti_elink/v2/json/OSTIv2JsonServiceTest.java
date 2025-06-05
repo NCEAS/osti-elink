@@ -2,6 +2,7 @@ package edu.ucsb.nceas.osti_elink.v2.json;
 
 
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
+import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceV1Test;
@@ -178,28 +179,30 @@ public class OSTIv2JsonServiceTest {
      * Test the getMetadata method with the invalid token
      * @throws Exception
      */
+    // todo this test method is probably not needed. The test by sending fake token should be done
+    //  just for the sendRequest(). All other methods calling sendrequest method probably don't
+    //  need to be tested for the handling of the fake token. This should just test for invalid doi.
     @Test
     public void testGetMetadataWithInvalidToken() throws Exception {
         // Set the env variable
         environmentVariablesRule.set("METACAT_OSTI_TOKEN", FAKE_TOKEN);
-        assertEquals(FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
+        assertEquals("1. ", FAKE_TOKEN, System.getenv("METACAT_OSTI_TOKEN"));
         service.loadToken();
-        assertEquals(FAKE_TOKEN, service.token);
+        assertEquals("2. ", FAKE_TOKEN, service.token);
         String identifier = "doi:10.15485/2304391";
         String ostiId = "2304391";
         try {
             String metadata = service.getMetadata(identifier, OSTIElinkService.DOI);
             fail("Test shouldn't get here since the doi doesn't exist");
         } catch (Exception e) {
-            assertTrue(e instanceof OSTIElinkException);
-            assertTrue(e.getMessage().contains("token"));
+            assertTrue("3. ", e instanceof OSTIElinkAuthenticationException);
         }
         try {
             String metadata = service.getMetadata(ostiId, OSTIElinkService.OSTI_ID);
             fail("Test shouldn't get here since the osti_id doesn't exist");
         } catch (Exception e) {
-            assertTrue(e instanceof OSTIElinkException);
-            assertTrue(e.getMessage().contains("token"));
+            assertTrue("5. ", e instanceof OSTIElinkException);
+            assertTrue("6. ", e.getMessage().contains("token"));
         }
     }
 
@@ -244,9 +247,14 @@ public class OSTIv2JsonServiceTest {
     @Test
     public void testGetStatus() throws Exception {
         String identifier = service.mintIdentifier(null);
-        assertTrue(identifier.startsWith("doi:10."));
+        assertTrue("Assert: DOI prefix is \"doi:10.\"", identifier.startsWith("doi:10."));
+
         String status = service.getStatus(identifier);
-        assertEquals("Saved", status); // todo what should the status be?
+        // elinkv2json record has the field "workflow_status" that has the value "SA" that indictaes that record
+        // is saved. But the metacat code has the hardcoded value "Saved". To not change the metacat code, the getStatus() method
+        // checks if "workflow_status"="SA", and then returns "status"="Saved".
+        // So the expected value here will be "Saved" instead of "SA".
+        assertEquals("Saved", status);
         identifier = "doi:10.15485/2304391";
         status = service.getStatus(identifier);
         assertEquals("R", status);

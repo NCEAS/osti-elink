@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
+import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
@@ -72,9 +73,6 @@ public class OSTIv2JsonService extends OSTIElinkService {
     // Constructed by concatenating  FULL_RECORDS_ENDPOINT_URL with /{id}/submit
     protected static String PUBLISH_DOI_ENDPOINT_URL = null;
 
-
-
-
     public static final String DOI_QUERY_MAX_ATTEMPTS_ENV_NAME =
             "METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS";
     protected static int maxAttempts = 40;
@@ -140,6 +138,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
     public String getStatus(String doi) throws OSTIElinkException {
         String status;
         String metadata = null;
+
+        // fetch metadata for given doi
         long start = System.currentTimeMillis();
         for (int i = 0; i <= maxAttempts; i++ ) {
             try {
@@ -163,6 +163,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
         long end = System.currentTimeMillis();
         log.warn("It waited " + (end - start)/1000 + " seconds for doi " + doi + " to be "
                 + "searchable after minting it.");
+
+        // process response to check status
         try {
             status = JsonResponseHandler.getPathValue(metadata, WORKFLOW_STATUS);
         } catch (JsonProcessingException e) {
@@ -214,11 +216,20 @@ public class OSTIv2JsonService extends OSTIElinkService {
             }
             log.info("The query sent to get metadata is " + getMetadataUrl);
 
-            // execute the query
-            byte[] response = sendRequest(GET, getMetadataUrl);
-            metadata = new String(response);
-            log.info("The response for id " + extractedIdentifier + " is\n " + metadata);
+            // execute the query with authentication error handling
+            try {
+                byte[] response = sendRequest(GET, getMetadataUrl);
+                metadata = new String(response);
+                log.info("OSTIv2JsonService.getMetadata: Successfully retrieved metadata for " + extractedIdentifier);
 
+            } catch (OSTIElinkAuthenticationException e) {
+                // Handle authentication errors with more context
+                String contextMsg = "OSTIv2JsonService.getMetadata - Failed to retrieve metadata for identifier '"
+                        + identifier + "' (" + type + "): " + e.getMessage()
+                        + ". Please check your OSTI token configuration.";
+                log.error(contextMsg);
+                throw new OSTIElinkAuthenticationException(e.getStatusCode(), contextMsg);
+            }
             // process query response
             // check for errors; return response if none found
             if (metadata == null || metadata.trim().equals("")) {
@@ -289,30 +300,34 @@ public class OSTIv2JsonService extends OSTIElinkService {
                 + new String(response));
 
         // validate that the response is valid json
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.readTree(response);
-        } catch (Exception e) {
-            throw new OSTIElinkException("OSTIv2JsonService.mintIdentifier - Error:  " + new String(response));
-        }
+//        try {
+//            final ObjectMapper mapper = new ObjectMapper();
+//            mapper.readTree(response);
+//        } catch (Exception e) {
+//            throw new OSTIElinkException("OSTIv2JsonService.mintIdentifier - Error:  " + new String(response));
+//        }
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(response);
 
             // Check that doi record has "status = SA" (saved) and access the "doi" field
-            if (rootNode.has(STATUS)) {
-                String status = rootNode.get(STATUS).asText();
+            if (rootNode.has(WORKFLOW_STATUS)) {
+                String status = rootNode.get(WORKFLOW_STATUS).asText();
                 String doi = rootNode.get(DOI).asText();
                 if (status != null && status.equalsIgnoreCase(SAVED_STATUS) && doi != null && !doi.trim().equals("")) {
                     DoiIdentifier = DOI + ":" + doi;
                 }
             } else {
-                System.out.println("Status field not found");
+                System.out.println("OSTIv2JsonService.mintIdentifier - ERROR: Status field not found");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new OSTIElinkException("OSTIv2JsonService.mintIdentifier - Error:  " + new String(response));
+
         }
+
+        log.debug("OSTIv2JsonService.mintIdentifier(): DoiIdentifier = " + DoiIdentifier);
 
         return DoiIdentifier;
     }
@@ -401,20 +416,17 @@ public class OSTIv2JsonService extends OSTIElinkService {
 //    todo review ifelse clause, simplify
     protected void setHeaders(HttpUriRequest request, String url){
         if(url.contains("elink2api")) {
-            log.debug(url + " is a v2 elink2api json request, so application/json has been added as the header");
+            log.debug("OSTIv2JsonService.setHeaders():" + url + "is a v2 elink2api json request, so application/json has been added as the header");
             request.addHeader("Accept", "application/json");
+            request.addHeader("Content-Type", "application/json");
         }
-//        } else {
-//            log.debug(url + "is a v2xml request, so application/xml has been added as the header");
-//            request.addHeader("Accept", "application/xml");
-//            request.addHeader("Content-Type", "application/xml");
-//        }
-        request.addHeader("Authorization", "Bearer " + token);
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 //        log.debug("OSTIv2JsonService.setHeaders(): request:" + request + " token: " + request.getFirstHeader("Authorization"));
     }
 
     protected void setGetHeaders(HttpUriRequest request){
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        request.addHeader("Accept", "application/json");
     }
 
 
@@ -447,14 +459,14 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     protected void constructURLs() throws OSTIElinkException {
         // get the base URL from the property file
-        log.info("The base URL from the property file is " + BASE_URL);
+        log.info("OSTIv2JsonService.constructURLs(): The base URL from the property file is " + BASE_URL);
 
         // get the base URL from the environment variable
         // overwrites the one from the property file
         String url = System.getenv(BASE_URL_ENV_NAME);
-        log.debug("yayyy url is " + url);
+        log.debug("OSTIv2JsonService.constructURLs(): url is " + url);
         if (url != null && !url.trim().equals("")) {
-            log.info("The base URL from the env variable " + BASE_URL_ENV_NAME
+            log.info("OSTIv2JsonService.constructURLs(): The base URL from the env variable " + BASE_URL_ENV_NAME
                     + " is " + url + " and the value overwrites the one from the property file");
             BASE_URL = url;
 
@@ -462,7 +474,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
         // error checking for baseURL
         if (BASE_URL == null) {
-            throw new OSTIElinkException("The base URL for the osti service is null");
+            throw new OSTIElinkException("OSTIv2JsonService.constructURLs(): The base URL for the osti service is null");
         }
 
         // baseURL should end with a "/"

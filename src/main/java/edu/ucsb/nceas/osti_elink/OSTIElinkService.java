@@ -52,8 +52,8 @@ import org.xml.sax.SAXException;
 public abstract class OSTIElinkService {
     public static final String DOI = "doi";
     public static final String OSTI_ID = "osti_id";
-    public static final String SAVED = "Saved";
-    public static final String PENDING = "Pending";
+
+
     
     protected static final int GET = 1;
     protected static final int PUT = 2;
@@ -63,6 +63,8 @@ public abstract class OSTIElinkService {
     private static final String minimalMetadataFile = "minimal-osti.xml";
     protected static final String minimalMetadataFileJson = "minimal-osti.json";
     protected static final String STATUS = "status";
+    public static final String SAVED = "Saved";
+    public static final String PENDING = "Pending";
     private static final String SUCCESS = "SUCCESS";
     protected static final String SAVED_STATUS = "SA";
     
@@ -335,7 +337,7 @@ public abstract class OSTIElinkService {
     protected byte[] sendRequest(int requestType, String uri) throws OSTIElinkException {
         return sendRequest(requestType, uri, null);
     }
-    
+
     /**
      * Send an HTTP request to the OSTI Elink service with a request body (for POST and PUT requests).
      * @param requestType the type of the service as an integer
@@ -347,62 +349,74 @@ public abstract class OSTIElinkService {
         HttpUriRequest request = null;
         log.debug("OSTIElinkService.sendRequest - Trying uri: " + uri);
         switch (requestType) {
-        case GET:
-            request = new HttpGet(uri);
-            setGetHeaders(request);
-            break;
-        case PUT:
-            request = new HttpPut(uri);
-            if (requestBody != null && requestBody.length() > 0) {
-                StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
-                ((HttpPut) request).setEntity(myEntity);
-            }
-            setHeaders(request, uri);
-            break;
-        case POST:
-            request = new HttpPost(uri);
-            if (requestBody != null && requestBody.length() > 0) {
-                StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
-                ((HttpPost) request).setEntity(myEntity);
-            }
-            setHeaders(request, uri);
-            break;
-        case DELETE:
-            request = new HttpDelete(uri);
-            setHeaders(request, uri);
-            break;
-        default:
-            throw new OSTIElinkException("Unrecognized HTTP method requested.");
+            case GET:
+                request = new HttpGet(uri);
+                setGetHeaders(request);
+                break;
+            case PUT:
+                request = new HttpPut(uri);
+                if (requestBody != null && requestBody.length() > 0) {
+                    StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
+                    ((HttpPut) request).setEntity(myEntity);
+                }
+                setHeaders(request, uri);
+                break;
+            case POST:
+                request = new HttpPost(uri);
+                if (requestBody != null && requestBody.length() > 0) {
+                    StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
+                    ((HttpPost) request).setEntity(myEntity);
+                }
+                setHeaders(request, uri);
+                break;
+            case DELETE:
+                request = new HttpDelete(uri);
+                setHeaders(request, uri);
+                break;
+            default:
+                throw new OSTIElinkException("Unrecognized HTTP method requested.");
         }
+
         byte[] body = null;
         try {
             HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
             log.debug("OSTIElinkService.sendRequest() - Response status: " + statusCode);
 
-            // check status code and throw error if not success
-            if(statusCode < 200 || statusCode > 300)
-            {
-                HttpEntity entity = response.getEntity();
-                String errorBody = "";
-                if (entity != null)
-                {
-                    errorBody = new String(EntityUtils.toByteArray(entity));
-                }
-                throw new OSTIElinkException("HTTP Error" + statusCode + ":" + errorBody);
-            }
-
-
+            // Get response body for error cases
             HttpEntity entity = response.getEntity();
+            String errorBody = "";
             if (entity != null) {
                 body = EntityUtils.toByteArray(entity);
+                errorBody = new String(body);
             }
+
+            // Handle different status codes
+            if (statusCode >= 200 && statusCode < 300) {
+                // Success - return body
+                return body;
+            } else if (statusCode == 401 || statusCode == 403) {
+                String errorMsg = "Authentication failed (HTTP " + statusCode + "): Invalid or expired token";
+                if (!errorBody.trim().isEmpty()) {
+                    errorMsg += " - " + errorBody;
+                }
+                log.warn("OSTIElinkService.sendRequest() - " + errorMsg);
+                throw new OSTIElinkAuthenticationException(statusCode, errorMsg);
+            } else {
+                // Other HTTP errors
+                String errorMsg = "HTTP Error " + statusCode;
+                if (!errorBody.trim().isEmpty()) {
+                    errorMsg += ": " + errorBody;
+                }
+                log.warn("OSTIElinkService.sendRequest() - " + errorMsg);
+                throw new OSTIElinkException(errorMsg);
+            }
+
         } catch (ClientProtocolException e) {
-            throw new OSTIElinkException(e.getMessage());
+            throw new OSTIElinkException("HTTP protocol error: " + e.getMessage());
         } catch (IOException e) {
-            throw new OSTIElinkException(e.getMessage());
+            throw new OSTIElinkException("Network error: " + e.getMessage());
         }
-        return body;
     }
 
     /**
