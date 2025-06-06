@@ -61,7 +61,7 @@ public abstract class OSTIElinkService {
     protected static final int DELETE = 4;
     private static final int CONNECTIONS_PER_ROUTE = 8;
     private static final String minimalMetadataFile = "minimal-osti.xml";
-    protected static final String minimalMetadataFileJson = "minimal-osti.json";
+
     protected static final String STATUS = "status";
     public static final String SAVED = "Saved";
     public static final String PENDING = "Pending";
@@ -513,7 +513,7 @@ public abstract class OSTIElinkService {
      * @return  the string with the "doi:" part if it has; otherwise return the identifier itself
      */
     public static String removeDOI(String identifier) {
-        log.debug("OSTIElinkService.removeDOI - the origial identifier is " + identifier);
+        log.debug("OSTIElinkService.removeDOI - the original identifier is " + identifier);
         String doiPrefix = DOI + ":";
         if (identifier!= null) {
             //we need to remove the doi prefix

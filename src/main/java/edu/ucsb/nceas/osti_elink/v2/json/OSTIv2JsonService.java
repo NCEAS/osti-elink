@@ -82,6 +82,10 @@ public class OSTIv2JsonService extends OSTIElinkService {
     private JsonNode minimalMetadataNode = null;
     private String originalDefaultSiteCode = null;
     private String currentDefaultSiteCode = null;
+//    protected static final String minimalMetadataFileJson = "minimal-osti.json";
+    protected static final String DEFAULT_MINIMAL_METADATA_FILE_JSON = "minimal-osti.json";
+    public static final String MINIMAL_METADATA_FILE_ENV_NAME = "METACAT_OSTI_MINIMAL_METADATA_FILE";
+
 
 
     /**
@@ -277,13 +281,13 @@ public class OSTIv2JsonService extends OSTIElinkService {
             setMetadataUrl = SET_METADATA_ENDPOINT_URL + "/" + osti_id + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
             byte[] response = sendRequest(PUT, setMetadataUrl, jsonMetadata);
             String responseStr = new String(response);
-            log.debug("The response from the OSTI service to set metadata for osti_id " + osti_id
+            log.debug("OSTIv2JsonService.setMetadata(): The response from the OSTI service to set metadata for osti_id " + osti_id
                     + " is:\n " + responseStr);
             // Parse the response to determine if the request succeeded or failed. If it failed, an
             // exception will be thrown.
             JsonResponseHandler.isResponseWithError(responseStr);
         } catch (OSTIElinkException e) {
-            throw new OSTIElinkException("Can't set the json metadata for osti_id " + osti_id +
+            throw new OSTIElinkException("OSTIv2JsonService.setMetadata(): Can't set the json metadata for osti_id " + osti_id +
                     " since " + e.getMessage());
         }
 
@@ -342,9 +346,14 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
         // Load minimal metadata if not already loaded
         if (minimalMetadataNode == null) {
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream(minimalMetadataFileJson)) {
+            // Check environment variable first, then fall back to default
+            String metadataFileName = System.getenv(MINIMAL_METADATA_FILE_ENV_NAME);
+            if (metadataFileName == null || metadataFileName.trim().isEmpty()) {
+                metadataFileName = DEFAULT_MINIMAL_METADATA_FILE_JSON;
+            }
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(metadataFileName)) {
                 if (is == null) {
-                    throw new IOException("Resource not found: " + minimalMetadataFileJson);
+                    throw new IOException("Resource not found: " + metadataFileName);
                 }
 
                 // Read JSON from input stream into JsonNode
@@ -407,7 +416,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
         }
     }
 
-    protected String parseOSTIidFromResponse(String metadata, String doi)
+    public String parseOSTIidFromResponse(String metadata, String doi)
             throws OSTIElinkException{
         if (metadata == null || metadata.trim().equals("")) {
             throw new OSTIElinkException("The service can't parse the blank response to get the "
@@ -458,7 +467,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
         // 1. Get the metadata for the given osti id
         String jsonMetadata = getMetadataFromOstiId(ostiId);
-        log.debug("The metadata for osti_id " + ostiId + " is\n" + jsonMetadata);
+        log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): The metadata for osti_id " + ostiId + " is\n" + jsonMetadata);
 
 
         try {
@@ -469,10 +478,10 @@ public class OSTIv2JsonService extends OSTIElinkService {
             record.remove(WORKFLOW_STATUS);
             record.put(SITE_URL, siteUrl);
 
-            // 4. Call the publish endpoint to send
+            // 4. Call the publish (/records/submit) endpoint to send
             // publish endpoint expects entire metadata with the request
             String newMetadata = record.toString();
-            log.debug("The modified metadata (removing workflow_status and adding site_url is\n"
+            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): The modified metadata (removing workflow_status and adding site_url) is\n"
                     + newMetadata);
             setMetadata(ostiId, newMetadata);
         } catch (JsonProcessingException e) {

@@ -1,0 +1,31 @@
+{
+  "title": "unknown",
+  "product_type": "DA",
+  "site_ownership_code": "ESS-DIVE",
+  "publication_date": "02/18/2019",
+  "access_limitations": [
+    "UNL"
+  ],
+  "persons": [
+    {
+      "first_name": "Arthur",
+      "last_name": "Mann",
+      "type": "AUTHOR"
+    }],
+  "organizations": [
+    {
+      "type": "RESEARCHING",
+      "name": "Oak Ridge National Laboratory"
+    },
+    {
+      "type": "SPONSOR",
+      "name": "US Department of Energy",
+      "identifiers": [
+        {
+          "type": "CN_DOE",
+          "value": "AB22-90PC64053"
+        }
+      ]
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -47,6 +48,10 @@ public class OSTIv2JsonServiceTest {
     @Rule
     public EnvironmentVariablesRule environmentVariablesMaxQueryAttemptRule =
         new EnvironmentVariablesRule("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", null);
+
+    @Rule
+    public EnvironmentVariablesRule environmentVariablesMinimalMetadataFileRule =
+            new EnvironmentVariablesRule("METACAT_OSTI_MINIMAL_METADATA_FILE", "test-files/minimal-osti-test.json");
 
     @Before
     public void setUp() throws Exception {
@@ -384,55 +389,74 @@ public class OSTIv2JsonServiceTest {
     }
 
     /**
-     * Test publishIdentifier command, which is special xml document in the setMetadata method.
+     * Test publishIdentifier command, which uses the handlePublishIdentifierCommand method.
      */
     @Test
     public void testPublishIdentifierCommand() throws Exception {
+        // 1. Mint a new identifier
         String orgIdentifier = service.mintIdentifier(null);
-        String identifier = OSTIElinkService.removeDOI(orgIdentifier);
+        String doi = OSTIElinkService.removeDOI(orgIdentifier);
+
+        // 2. Wait for the DOI to be searchable and get its metadata
         int index = 0;
         String metadata = null;
         while (index <= MAX_ATTEMPTS) {
             try {
-                metadata = service.getMetadata(identifier);
+                metadata = service.getMetadata(orgIdentifier); // Use full DOI identifier
                 break;
-            } catch (Exception e) {
+            } catch (OSTIElinkNotFoundException e) {
                 Thread.sleep(200);
             }
             index++;
         }
-        assertTrue(metadata.contains(identifier)); // todo update for the v2json workflow
+        assertNotNull("Metadata should not be null", metadata);
+        assertTrue("Metadata should contain the DOI", metadata.contains(doi));
+
+        // 3. Extract OSTI ID from metadata for publishing
+        String ostiId = service.parseOSTIidFromResponse(metadata, orgIdentifier);
+        assertNotNull("OSTI ID should not be null", ostiId);
+//        log.info("Extracted OSTI ID: " + ostiId + " for DOI: " + orgIdentifier);
+
+        // 4. Publish the identifier with site URL
         String siteUrl = "https://data.ess-dive.lbl.gov/view/" + orgIdentifier;
-        String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
-        service.setMetadata(identifier, null, command);
-        String status = service.getStatus(identifier);
+        service.handlePublishIdentifierCommand(ostiId, siteUrl);
+
+        // 5. Wait for status to change to "R" (Released/Published)
+        String status = service.getStatus(orgIdentifier);
         index = 0;
-        while (index <= MAX_ATTEMPTS && !status.equals("R")) {
+        while (index <= MAX_ATTEMPTS && !"R".equals(status)) {
             Thread.sleep(200);
-            status = service.getStatus(identifier);
+            status = service.getStatus(orgIdentifier);
             index++;
         }
-        assertTrue(status.equals("R"));
-        metadata = service.getMetadata(identifier);
-        assertTrue(metadata.contains(siteUrl));
-        // Try another site url to test the new site url will replace the old one.
-        String newSiteUrl = "https://knb.ecoinformatics/view/" + orgIdentifier;
-        command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
-        service.setMetadata(identifier, null, command);
-        metadata = service.getMetadata(identifier);
+        assertEquals("Status should be 'R' (Released)", "R", status);
+
+        // 6. Verify the site URL is in the metadata
+        metadata = service.getMetadata(orgIdentifier);
+        assertTrue("Metadata should contain the site URL", metadata.contains(siteUrl));
+
+        // 7. Test updating with a new site URL
+        String newSiteUrl = "https://knb.ecoinformatics.org/view/" + orgIdentifier;
+        service.handlePublishIdentifierCommand(ostiId, newSiteUrl);
+
+        // 8. Wait for the new site URL to be reflected in metadata
         index = 0;
-        while (index <= MAX_ATTEMPTS && !metadata.contains(newSiteUrl)) {
+        do {
             Thread.sleep(200);
-            status = service.getStatus(identifier);
+            metadata = service.getMetadata(orgIdentifier);
             index++;
-        }
-        assertTrue(status.equals("R"));
-        metadata = service.getMetadata(identifier);
-        // Old site url should be gone
-        assertFalse(metadata.contains(siteUrl));
-        // New site url should be there
-        assertTrue(metadata.contains(newSiteUrl));
+        } while (index <= MAX_ATTEMPTS && !metadata.contains(newSiteUrl));
+
+        // 9. Verify the final state
+        status = service.getStatus(orgIdentifier);
+        assertEquals("Status should still be 'R' (Released)", "R", status);
+
+        // 10. Verify URL replacement
+        metadata = service.getMetadata(orgIdentifier);
+        assertFalse("Metadata should not contain the old site URL", metadata.contains(siteUrl));
+        assertTrue("Metadata should contain the new site URL", metadata.contains(newSiteUrl));
     }
+
 
     /**
      * Test the default max query attempts
