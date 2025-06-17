@@ -1,0 +1,72 @@
+{
+  "site_url": "https://data.ess-dive.lbl.gov/view/doi:10.15485/1829502",
+  "product_type": "DA",
+  "title": "0 - Data from Raczka et al., Interactions between microbial diversity and substrate chemistry determine the fate of carbon in soil, from Elizabeth Woods in Morgantown, West Virginia, USA",
+  "contract_nos": "SC0019472",
+  "non_doe_contract_nos": null,
+  "originating_research_org": "Quantitative, trait-based microbial ecology to accurately model the impacts of nitrogen deposition on soil carbon cycling in the Anthropocene",
+  "description": "File types include: Soil respiration as 13C cumulative respiration from soil incubation experiment, qSIP (quantitative stable isotope probing) data that is \"18S apes wide\" which is the fungal atom percent excess or how much the fungi took up of the labeled litter and \"16S apes wide\" which is the bacterial atom percent excess or how much the bacteria took up of the labeled litter, metabolomic data from the incubated soil samples called \"Metab Soil Unique Filtered\", which is the metabolomic data that had an initial filter from the raw data, and lipidomic data from the incubated soil samples called \"All lipids soil\". These files were used according to methods in Raczka et al. 2021 Scientific Reports. Headers show soil type (Oak, Poplar) and litter type (also called substrate here, which is labeled as no litter (control), poplar, and oak). This research was done to understand interactions between ecosystem-level processes and microbial diversity that impacts the composition of decomposition products that can form stable soil organic matter.",
+  "sponsor_org": "U.S. DOE > Office of Science > Basic Energy Sciences (BES)",
+  "related_resource": "Raczka NC, Piñeiro J, Tfaily MM, Chu RK, Lipton MS, Pasa-Tolic L, Morrissey E, & Brzostek ER. 2021. Interactions between microbial diversity and substrate chemistry determine the fate of carbon in soil. Sci Rep 11,19320. DOI: 10.1038/s41598-021-97942-9",
+  "dataset_type": "SM",
+  "publication_date": "2021",
+  "contact_name": "Nanette Raczka",
+  "contact_email": "ncr0008@mix.wvu.edu",
+  "site_input_code": "ESS-DIVE",
+  "doi_infix": null,
+  "subject_categories_code": "54 ENVIRONMENTAL SCIENCES",
+  "language": "English",
+  "country": "US",
+  "persons": [
+    {
+      "first_name": "Nanette",
+      "last_name": "Raczka",
+      "type": "AUTHOR",
+      "private_email": "ncr0008@mix.wvu.edu",
+      "orcid_id": "https://orcid.org/0000-0002-2576-0773"
+    },
+    {
+      "first_name": "Juan",
+      "last_name": "Pineiro",
+      "type": "AUTHOR",
+      "private_email": "jpineiron@gmail.com"
+    },
+    {
+      "first_name": "Malak",
+      "last_name": "Tfaily",
+      "type": "AUTHOR",
+      "private_email": "tfaily@arizona.edu"
+    },
+    {
+      "first_name": "Rosalie",
+      "last_name": "Chu",
+      "type": "AUTHOR",
+      "private_email": "Rosalie.Chu@pnnl.gov"
+    },
+    {
+      "first_name": "Mary",
+      "last_name": "Lipton",
+      "type": "AUTHOR",
+      "private_email": "Mary.Lipton@pnnl.gov"
+    },
+    {
+      "first_name": "Ljiljana",
+      "last_name": "Pasa-Tolic",
+      "type": "AUTHOR",
+      "private_email": "Ljiljana.PasaTolic@pnnl.gov"
+    },
+    {
+      "first_name": "Ember",
+      "last_name": "Morrissey",
+      "type": "AUTHOR",
+      "private_email": "ember.morrissey@mail.wvu.edu"
+    },
+    {
+      "first_name": "Edward",
+      "last_name": "Brzostek",
+      "type": "AUTHOR",
+      "private_email": "erbrzostek@mix.wvu.edu"
+    }
+  ],
+  "keywords": ["EARTH SCIENCE > BIOSPHERE > ECOLOGICAL DYNAMICS","EARTH SCIENCE > BIOSPHERE > ECOSYSTEMS","EARTH SCIENCE > LAND SURFACE > SOILS","EARTH SCIENCE > BIOSPHERE > ECOLOGICAL DYNAMICS > ECOSYSTEM FUNCTIONS > DECOMPOSITION"]
+}

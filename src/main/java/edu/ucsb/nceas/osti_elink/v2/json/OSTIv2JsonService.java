@@ -10,6 +10,8 @@ import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
+import edu.ucsb.nceas.osti_elink.PublishIdentifierCommandFactory;
+import edu.ucsb.nceas.osti_elink.PublishIdentifierCommand;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
@@ -270,27 +272,59 @@ public class OSTIv2JsonService extends OSTIElinkService {
     }
 
     /**
-     * Set a new version of metadata (json format) to the given osti id
-     * @param osti_id  the identifier's metadata which will be replaced
-     * @param jsonMetadata  the new metadata in json format
+     * Set new metadata for the given DOI.
+     * @param doi The DOI identifier to update
+     * @param doiPrefix A shortcut to determine OSTI_id (can be null for safety)
+     * @param metadataJson The new metadata in JSON format
      * @throws OSTIElinkException
      */
-    protected void setMetadata(String osti_id, String jsonMetadata) throws OSTIElinkException {
-        String setMetadataUrl = null;
-        try {
-            setMetadataUrl = SET_METADATA_ENDPOINT_URL + "/" + osti_id + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
-            byte[] response = sendRequest(PUT, setMetadataUrl, jsonMetadata);
-            String responseStr = new String(response);
-            log.debug("OSTIv2JsonService.setMetadata(): The response from the OSTI service to set metadata for osti_id " + osti_id
-                    + " is:\n " + responseStr);
-            // Parse the response to determine if the request succeeded or failed. If it failed, an
-            // exception will be thrown.
-            JsonResponseHandler.isResponseWithError(responseStr);
-        } catch (OSTIElinkException e) {
-            throw new OSTIElinkException("OSTIv2JsonService.setMetadata(): Can't set the json metadata for osti_id " + osti_id +
-                    " since " + e.getMessage());
-        }
+    @Override
+    public void setMetadata(String doi, String doiPrefix, String metadataJson) throws OSTIElinkException {
+        // Get the OSTI ID associated with this DOI
+        String ostiId = getOstiId(doi, doiPrefix);
 
+        log.debug("OSTIv2JsonService.setMetadata - Processing metadata update for DOI " + doi +
+                " with OSTI ID " + ostiId + ". Metadata:\n" + metadataJson);
+
+        // Check if this is a publish command
+        PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
+        if (command.parse(metadataJson)) {
+            log.info("OSTIv2JsonService.setMetadata - Detected publish identifier command. " +
+                    "Will handle via specialized route.");
+
+            // Use the specialized publication handler which handles the workflow status to site_url conversion
+            handlePublishIdentifierCommand(command.getOstiId(), command.getUrl());
+        } else {
+            log.debug("OSTIv2JsonService.setMetadata - Standard metadata update (not a publish command)");
+
+            // For standard updates, use the /records/{id}/save endpoint
+            String updateUrl = UPDATE_METADATA_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;
+
+            log.debug("OSTIv2JsonService.setMetadata - Sending metadata update to: " + updateUrl);
+            byte[] response = sendRequest(PUT, updateUrl, metadataJson);
+            String responseStr = new String(response);
+
+            log.debug("OSTIv2JsonService.setMetadata - Response from OSTI service: " + responseStr);
+
+            // Validate the response
+            try {
+                // This will throw an exception if there's an error in the response
+                JsonNode responseNode = JsonResponseHandler.isResponseWithError(responseStr);
+
+                // Check if response indicates success
+                if (responseNode == null || !responseNode.has(WORKFLOW_STATUS)) {
+                    throw new OSTIElinkException("OSTIv2JsonService.setMetadata - Invalid or incomplete response");
+                }
+
+                log.info("OSTIv2JsonService.setMetadata - Successfully updated metadata for DOI " +
+                        doi + " (OSTI ID: " + ostiId + "). New status: " +
+                        responseNode.get(WORKFLOW_STATUS).asText());
+
+            } catch (OSTIElinkException e) {
+                log.error("OSTIv2JsonService.setMetadata - Error updating metadata: " + e.getMessage());
+                throw new OSTIElinkException("OSTIv2JsonService.setMetadata - Error:\n" + responseStr);
+            }
+        }
     }
 
 
@@ -462,13 +496,19 @@ public class OSTIv2JsonService extends OSTIElinkService {
     }
 
 
+    /**
+     * Handle publication of a DOI by sending to the submit endpoint
+     *
+     * @param ostiId The OSTI ID to publish
+     * @param siteUrl The site URL for the published record
+     * @throws OSTIElinkException
+     */
     protected void handlePublishIdentifierCommand(String ostiId, String siteUrl)
             throws OSTIElinkException {
 
         // 1. Get the metadata for the given osti id
         String jsonMetadata = getMetadataFromOstiId(ostiId);
         log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): The metadata for osti_id " + ostiId + " is\n" + jsonMetadata);
-
 
         try {
             // 2. Parse the metadata to get the record
@@ -478,14 +518,25 @@ public class OSTIv2JsonService extends OSTIElinkService {
             record.remove(WORKFLOW_STATUS);
             record.put(SITE_URL, siteUrl);
 
-            // 4. Call the publish (/records/submit) endpoint to send
-            // publish endpoint expects entire metadata with the request
+            // 4. Call the publish endpoint directly
+            String publishUrl = PUBLISH_DOI_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
             String newMetadata = record.toString();
-            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): The modified metadata (removing workflow_status and adding site_url) is\n"
-                    + newMetadata);
-            setMetadata(ostiId, newMetadata);
+
+            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Sending to publish endpoint: " + publishUrl +
+                    "\nThe modified metadata (removing workflow_status and adding site_url) is:\n" + newMetadata);
+
+            byte[] response = sendRequest(PUT, publishUrl, newMetadata);
+            String responseStr = new String(response);
+
+            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Response from OSTI service: " + responseStr);
+
+            // Verify the response
+            JsonResponseHandler.isResponseWithError(responseStr);
+
+            log.info("OSTIv2JsonService.handlePublishIdentifierCommand(): Successfully published OSTI ID " + ostiId);
+
         } catch (JsonProcessingException e) {
-            throw new OSTIElinkException(e.getMessage());
+            throw new OSTIElinkException("Error processing metadata for OSTI ID " + ostiId + ": " + e.getMessage());
         }
     }
 
