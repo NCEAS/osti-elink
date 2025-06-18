@@ -441,13 +441,27 @@ public class OSTIv2JsonServiceTest {
 
         // 8. Wait for the new site URL to be reflected in metadata AND status to return to "R"
         index = 0;
+        long delay = 1000; // Start with 1 second
+        long maxDelay = 16000; // Cap at 16 seconds
+        boolean needToWait;
+        boolean hasAttemptsLeft;
+
         do {
-            Thread.sleep(1000);
+            Thread.sleep(delay);
             metadata = service.getMetadata(orgIdentifier);
             status = service.getStatus(orgIdentifier);
             index++;
-        } while (!(metadata.contains(newSiteUrl) && "R".equals(status)) && index <= MAX_ATTEMPTS);
 
+            // Double the delay for next iteration, but cap it at maxDelay
+            delay = Math.min(delay * 2, maxDelay);
+
+            // Condition 1: Check if we still need to wait (site URL not updated OR status not R)
+            needToWait = !metadata.contains(newSiteUrl) || !"R".equals(status);
+
+            // Condition 2: Check if we haven't exceeded max attempts
+            hasAttemptsLeft = index <= MAX_ATTEMPTS;
+
+        } while (needToWait && hasAttemptsLeft);
 
         // 9. Verify the final state
         status = service.getStatus(orgIdentifier);
