@@ -229,7 +229,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
             try {
                 byte[] response = sendRequest(GET, getMetadataUrl);
                 metadata = new String(response);
-                log.info("OSTIv2JsonService.getMetadata: Successfully retrieved metadata for " + extractedIdentifier);
+                log.info("OSTIv2JsonService.getMetadata: Successfully retrieved metadata for " + extractedIdentifier + "\n metadata: " + metadata);
 
             } catch (OSTIElinkAuthenticationException e) {
                 // Handle authentication errors with more context

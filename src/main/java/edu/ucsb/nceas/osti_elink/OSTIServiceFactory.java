@@ -3,6 +3,7 @@ package edu.ucsb.nceas.osti_elink;
 import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService;
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,16 +54,12 @@ public class OSTIServiceFactory {
                          + OSTISERVICE_CLASSNAME_ENV_NAME);
         }
         String baseURL = getProperty(OSTIElinkClient.BASE_URL_PROPERTY, properties);
-        if (className.equals("edu.ucsb.nceas.osti_elink.v1.OSTIService")) {
-            // v1 service
-            String userName = getProperty(OSTIElinkClient.USER_NAME_PROPERTY, properties);
-            String password = getProperty(OSTIElinkClient.PASSWORD_PROPERTY, properties);
-
-            service = new OSTIService(userName, password, baseURL);
-            log.info("The OSTI service class is v1: " + service.getClass().getName());
-        } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService")) {
+        if (className.equals("edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService")) {
             service = new OSTIv2XmlService(null, null, baseURL, properties);
             log.info("The OSTI service class is v2xml: " + service.getClass().getName());
+        } else if (className.equals("edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService")) {
+            service = new OSTIv2JsonService(null, null, baseURL, properties);
+            log.info("The OSTI service class is v2json: " + service.getClass().getName());
         } else {
             throw new ClassNotSupported("OSTIService does not support the class " + className);
         }

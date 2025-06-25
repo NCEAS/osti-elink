@@ -96,7 +96,7 @@ public class OSTIElinkClientV2XmlTest {
 
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-two-osti-id.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             //even though this request should fail in the server side, this test
             //still succeed since it is running on another thread.
             client.setMetadata(identifier,newMetadata);
@@ -110,7 +110,7 @@ public class OSTIElinkClientV2XmlTest {
 
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-no-osti-id.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             index = 0;
             metadata = client.getMetadata(identifier);
@@ -130,7 +130,7 @@ public class OSTIElinkClientV2XmlTest {
 
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-one-osti-id.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             metadata = client.getMetadata(identifier);
             index = 0;
@@ -150,7 +150,7 @@ public class OSTIElinkClientV2XmlTest {
             assertNotEquals("Saved", status);
         }
         String siteUrl = "https://data.ess-dive.lbl.gov/view/" + identifier;
-        String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
+        String command = OSTIv2XmlServiceTest.generatePublishIdentifierCommandWithSiteURL(siteUrl);
         client.setMetadata(identifier, command);
         index = 0;
         status = client.getStatus(identifier);
@@ -191,7 +191,7 @@ public class OSTIElinkClientV2XmlTest {
         // Set the rich metadata without the site url
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-no-osti-id-without-site-url.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             index = 0;
             metadata = client.getMetadata(identifier);
@@ -213,7 +213,7 @@ public class OSTIElinkClientV2XmlTest {
         // Publish the object
         String siteUrl =
             "https://knb.ecoinformatics.org/view/urn%3Auuid%3A1651eeb1-e050-4c78-8410-ec2389ca2363";
-        String publish = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
+        String publish = OSTIv2XmlServiceTest.generatePublishIdentifierCommandWithSiteURL(siteUrl);
         client.setMetadata(identifier, publish);
         index = 0;
         status = client.getStatus(identifier);
@@ -234,7 +234,7 @@ public class OSTIElinkClientV2XmlTest {
         // Reset a new URL by the publish command
         String newSiteUrl =
             "https://knb.ecoinformatics.org/view/urn%3Auuid%3A90dfc355-2f29-4eb5-be9a-b742df13b323";
-        publish = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
+        publish = OSTIv2XmlServiceTest.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
         client.setMetadata(identifier, publish);
         index = 0;
         metadata = client.getMetadata(identifier);
@@ -264,7 +264,7 @@ public class OSTIElinkClientV2XmlTest {
         //Set a new metadata with the site url
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-one-osti-id.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             index = 0;
             metadata = client.getMetadata(identifier);
@@ -295,7 +295,7 @@ public class OSTIElinkClientV2XmlTest {
         //Set a new metadata with the set_reserved. The status will change to "Saved".
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-no-osti-id-without-site-url.xml")) {
-            String newMetadata = OSTIServiceV1Test.toString(is);
+            String newMetadata = OSTIv2XmlServiceTest.toString(is);
             client.setMetadata(identifier, newMetadata);
             index = 0;
             metadata = client.getMetadata(identifier);

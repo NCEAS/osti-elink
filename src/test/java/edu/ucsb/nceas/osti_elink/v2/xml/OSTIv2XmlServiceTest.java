@@ -3,9 +3,9 @@ package edu.ucsb.nceas.osti_elink.v2.xml;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
-import edu.ucsb.nceas.osti_elink.OSTIServiceV1Test;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,6 +13,9 @@ import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -397,7 +400,7 @@ public class OSTIv2XmlServiceTest {
         }
         assertTrue(metadata.contains(identifier));
         String siteUrl = "https://data.ess-dive.lbl.gov/view/" + orgIdentifier;
-        String command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(siteUrl);
+        String command = generatePublishIdentifierCommandWithSiteURL(siteUrl);
         service.setMetadata(identifier, null, command);
         String status = service.getStatus(identifier);
         index = 0;
@@ -411,7 +414,7 @@ public class OSTIv2XmlServiceTest {
         assertTrue(metadata.contains(siteUrl));
         // Try another site url to test the new site url will replace the old one.
         String newSiteUrl = "https://knb.ecoinformatics/view/" + orgIdentifier;
-        command = OSTIServiceV1Test.generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
+        command = generatePublishIdentifierCommandWithSiteURL(newSiteUrl);
         service.setMetadata(identifier, null, command);
         metadata = service.getMetadata(identifier);
         index = 0;
@@ -455,5 +458,35 @@ public class OSTIv2XmlServiceTest {
         environmentVariablesMaxQueryAttemptRule.set("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", "100");
         OSTIv2XmlService service4 = new OSTIv2XmlService(null, null, testBaseURL, props);
         assertEquals(100, service4.getMaxAttempts());
+    }
+
+    /**
+     * Generate the publishIdentifier command
+     * @param siteURL the site url will be used in the command
+     * @return the publishIdentifier command in xml format
+     */
+    public static String generatePublishIdentifierCommandWithSiteURL(String siteURL) {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><records><record><site_url>";
+        xml = xml + StringEscapeUtils.escapeXml10(siteURL);
+        xml = xml + "</site_url></record></records>";
+        return xml;
+    }
+
+    /**
+     * Read a input stream object to a string
+     * @param inputStream  the source of input
+     * @return the string presentation of the input stream
+     * @throws Exception
+     */
+    public static String toString(InputStream inputStream) throws Exception {
+        int bufferSize = 1024;
+        char[] buffer = new char[bufferSize];
+        StringBuilder textBuilder = new StringBuilder();
+        try (Reader reader = new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name()))) {
+            for (int numRead; (numRead = reader.read(buffer, 0, buffer.length)) > 0; ) {
+                textBuilder.append(buffer, 0, numRead);
+            }
+        }
+        return textBuilder.toString();
     }
 }

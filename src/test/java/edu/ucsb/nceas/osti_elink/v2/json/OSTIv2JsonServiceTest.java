@@ -5,7 +5,6 @@ import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
-import edu.ucsb.nceas.osti_elink.OSTIServiceV1Test;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
