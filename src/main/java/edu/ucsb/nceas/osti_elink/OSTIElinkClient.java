@@ -55,7 +55,7 @@ public class OSTIElinkClient {
      * @param username  the username of an OSTIElink account
      * @param password  the password of the OSTIElink account
      * @param baseURL  the base url of the OSTIElink service
-     * @param errorAgent  the class used to send error message to administers. It can be null.
+     * @param errorAgent  the class used to send error message to administrators. It can be null.
      *                    If it is null, the error messages will only be logged in the error level.
      * 
      */

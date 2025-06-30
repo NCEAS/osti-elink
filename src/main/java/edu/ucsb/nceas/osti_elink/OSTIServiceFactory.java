@@ -46,8 +46,8 @@ public class OSTIServiceFactory {
                 log.info("We cannot find the OSTI service name from neither the evn variable "
                              + OSTISERVICE_CLASSNAME_ENV_NAME
                              + "nor the properties file. So we will use the default one: "
-                             + "edu.ucsb.nceas.osti_elink.v1.OSTIService");
-                className = "edu.ucsb.nceas.osti_elink.v1.OSTIService";
+                             + "edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService");
+                className = "edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService";
             }
         } else {
             log.info("The class name " + className + " is set by the environmental variable "
@@ -86,7 +86,7 @@ public class OSTIServiceFactory {
         }
         String value = properties.getProperty(propertyName);
         if (value == null || value.trim().equals("")) {
-            throw new PropertyNotFound("The poperty of " + propertyName + " can't found");
+            throw new PropertyNotFound("The property of " + propertyName + " not found");
         }
         return value;
     }

@@ -87,10 +87,10 @@ public class OSTIElinkServiceRequest implements Runnable {
                 case SETMETADATA:
                     String prefix = null;
                     service.setMetadata(identifier, prefix, metadata);
-                    log.debug("Completed CREATE request for: " + identifier);
+                    log.debug("Completed SET METADATA request for: " + identifier);
                     break;
                 default:
-                    log.warn("OSTIElinkServiceRequest - the request doesn't support this methdo: " + method);
+                    log.warn("OSTIElinkServiceRequest - the request doesn't support this method: " + method);
                     break;
             }
         } catch (Exception e) {

@@ -3,6 +3,7 @@ package edu.ucsb.nceas.osti_elink;
 import edu.ucsb.nceas.osti_elink.exception.ClassNotSupported;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v1.OSTIService;
+import edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService;
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +20,8 @@ import static org.junit.Assert.fail;
  * @author Tao
  */
 public class OSTIServiceFactoryTest {
-    private static final String v1ClassName = "edu.ucsb.nceas.osti_elink.v1.OSTIService";
-    private static final String v2ClassName = "edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService";
+    private static final String v2JsonClassName = "edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonService";
+    private static final String v2XmlClassName = "edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlService";
     @Rule
     public EnvironmentVariablesRule environmentVariablesRule =
         new EnvironmentVariablesRule("METACAT_OSTI_SERVICE_CLASS_NAME", null);
@@ -58,47 +59,49 @@ public class OSTIServiceFactoryTest {
     }
 
     /**
-     * Test to get a V1 OSTIService
+     * Test to get a V2Json OSTIService
      * @throws Exception
      */
     @Test
-    public void testGetOSTIV1Service() throws Exception {
+    public void testGetOSTIV2JsonService() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
         properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
-        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v1ClassName);
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2JsonClassName);
+        properties.setProperty(OSTIv2JsonService.TOKEN_PATH_PROP_NAME, "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
-        assertTrue(service instanceof OSTIService);
-        properties.remove(OSTIElinkClient.USER_NAME_PROPERTY);
+        assertTrue(service instanceof OSTIv2JsonService);
+        properties.remove(OSTIv2JsonService.TOKEN_PATH_PROP_NAME);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
-            fail("Test can't get there since the username property is not set.");
+            fail("Test can't get there since the TOKEN_PATH_PROP_NAME property is not set.");
         } catch (Exception e) {
             assertTrue(e instanceof PropertyNotFound);
         }
     }
 
     /**
-     * Test to get a V1 OSTIService when the env is set to be v1 while the property is set to v2xml
+     * Test to get a V2Json OSTIService when the env is set to be v2json while the property is set to v2xml
      * @throws Exception
      */
     @Test
-    public void testGetOSTIV1ServiceFromEnv() throws Exception {
+    public void testGetOSTIV2JsonServiceFromEnv() throws Exception {
         // env set the variable v1
-        environmentVariablesRule.set("METACAT_OSTI_SERVICE_CLASS_NAME", v1ClassName);
+        environmentVariablesRule.set("METACAT_OSTI_SERVICE_CLASS_NAME", v2JsonClassName);
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
         properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
+        properties.setProperty(OSTIv2JsonService.TOKEN_PATH_PROP_NAME, "./token");
         // Properties set it to v2xml
-        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2ClassName);
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2XmlClassName);
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
-        assertTrue(service instanceof OSTIService);
-        properties.remove(OSTIElinkClient.USER_NAME_PROPERTY);
+        assertTrue(service instanceof OSTIv2JsonService);
+        properties.remove(OSTIv2JsonService.TOKEN_PATH_PROP_NAME);
         try {
             service = OSTIServiceFactory.getOSTIElinkService(properties);
-            fail("Test can't get there since the username property is not set.");
+            fail("Test can't get there since TOKEN_PATH_PROP_NAME property is not set.");
         } catch (Exception e) {
             assertTrue(e instanceof PropertyNotFound);
         }
@@ -112,7 +115,7 @@ public class OSTIServiceFactoryTest {
     public void testGetOSTIV2XmlService() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
-        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2ClassName);
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2XmlClassName);
         properties.setProperty(OSTIv2XmlService.TOKEN_PATH_PROP_NAME, "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
         assertTrue(service instanceof OSTIv2XmlService);
@@ -132,11 +135,11 @@ public class OSTIServiceFactoryTest {
     @Test
     public void testGetOSTIV2XmlServiceFromEnv() throws Exception {
         // env set the variable v2xml
-        environmentVariablesRule.set(OSTIServiceFactory.OSTISERVICE_CLASSNAME_ENV_NAME, v2ClassName);
+        environmentVariablesRule.set(OSTIServiceFactory.OSTISERVICE_CLASSNAME_ENV_NAME, v2XmlClassName);
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
         // properties set the variable v1
-        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v1ClassName);
+        properties.setProperty(OSTIServiceFactory.OSTISERVICE_CLASSNAME_PROPERTY, v2JsonClassName);
         properties.setProperty(OSTIv2XmlService.TOKEN_PATH_PROP_NAME, "./token");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
         assertTrue(service instanceof OSTIv2XmlService);
@@ -171,16 +174,17 @@ public class OSTIServiceFactoryTest {
 
     /**
      * If we can't find the class name in neither the environmental variable nor the properties
-     * file, the default class - v1 will be used
+     * file, the default class - v2json will be used
      * @throws Exception
      */
     @Test
     public void testCreateDefaultClass() throws Exception {
+        environmentVariablesRule.set("METACAT_OSTI_TOKEN", "token");
         Properties properties = new Properties();
         properties.setProperty(OSTIElinkClient.USER_NAME_PROPERTY, "name");
         properties.setProperty(OSTIElinkClient.PASSWORD_PROPERTY, "password");
         properties.setProperty(OSTIElinkClient.BASE_URL_PROPERTY, "https://foo.com");
         OSTIElinkService service = OSTIServiceFactory.getOSTIElinkService(properties);
-        assertTrue(service instanceof OSTIService);
+        assertTrue(service instanceof OSTIv2JsonService);
     }
 }
