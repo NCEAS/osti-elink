@@ -81,7 +81,7 @@ public class OSTIElinkErrorAgentTest {
                 metadata = client.getMetadata(identifier);
                 break;
             } catch (OSTIElinkNotFoundException e) {
-                Thread.sleep(1000); // Wait longer than 200ms
+                Thread.sleep(1000);
                 index++;
             }
         }
@@ -110,7 +110,7 @@ public class OSTIElinkErrorAgentTest {
                     if (metadata.contains("\"title\":\"0 - Data from Raczka et al., Interactions between"))
                         break;
                 } catch (OSTIElinkNotFoundException e) {
-                    Thread.sleep(delay); // Wait longer than 200ms
+                    Thread.sleep(delay);
                     delay *= 2;
                     index++;
                 }
@@ -137,7 +137,7 @@ public class OSTIElinkErrorAgentTest {
                     if (metadata.contains("\"title\":\"2 - Data from Raczka et al., Interactions between"))
                         break;
                 } catch (OSTIElinkNotFoundException e) {
-                    Thread.sleep(delay); // Wait longer than 200ms
+                    Thread.sleep(delay);
                     delay *= 2;
                     index++;
                 }
@@ -155,25 +155,10 @@ public class OSTIElinkErrorAgentTest {
             String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
             client.setMetadata(uuid, newMetadata);
 
-//            index = 0;
-//            int delay = 1000;
-//            metadata = null;
-//            while (index <= MAX_ATTEMPTS) {
-//                try {
-//                    metadata = client.getMetadata(identifier);
-//                    if (metadata.contains("\"title\":\"2 - Data from Raczka et al., Interactions between"))
-//                        break;
-//                } catch (OSTIElinkNotFoundException e) {
-//                    Thread.sleep(delay);
-//                    delay *= 2;
-//                    index++;
-//                }
+
             }
 
-//            assertTrue(metadata.contains(identifier));
-//            assertTrue(metadata.contains("\"title\":\"2 - Data from Raczka et al., Interactions between"));
-//            assertTrue(agent.getError().contains(uuid));
-//        }
+
 
         // Test 4: Invalid site code (should fail immediately)
         final String KNB = "KNB";
