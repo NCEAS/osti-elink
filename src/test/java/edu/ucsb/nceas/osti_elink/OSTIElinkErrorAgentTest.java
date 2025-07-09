@@ -190,8 +190,8 @@ public class OSTIElinkErrorAgentTest {
         String errorMessage = agent.getError();
         System.out.println("Error message from agent: " + errorMessage);
 
-//        assertTrue("Should contain the UUID that failed", errorMessage.contains(uuid));
-//        assertTrue("Should contain error about KNB site code", errorMessage.contains(KNB));
+        assertTrue("Should contain the UUID that failed", errorMessage.contains(uuid));
+        assertTrue("Should contain 403 error about KNB site code", errorMessage.contains("{\"errors\":[{\"status\":\"403\",\"detail\":\"Permission to create new record denied.\"}]}"));
         assertTrue("Requests should fail with errors due to invalid doi and site_ownership_code", !agent.getError().isEmpty());
     }
 }
