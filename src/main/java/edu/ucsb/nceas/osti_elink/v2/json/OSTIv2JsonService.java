@@ -287,6 +287,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
                 " with OSTI ID " + ostiId + ". Metadata:\n" + metadataJson);
 
         // Check if this is a publish command
+        // If the metadata contains site_url and workflow_status=R, then it is considered a publish command
         PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
         if (command.parse(metadataJson)) {
             log.info("OSTIv2JsonService.setMetadata - Detected publish identifier command. " +
@@ -297,7 +298,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
         } else {
             log.debug("OSTIv2JsonService.setMetadata - Standard metadata update (not a publish command)");
 
-            // For standard updates, use the /records/{id}/save endpoint
+            // For standard updates to datasets that are in saved (SV) status, use the /records/{id}/save endpoint
             String updateUrl = UPDATE_METADATA_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;
 
             log.debug("OSTIv2JsonService.setMetadata - Sending metadata update to: " + updateUrl);
