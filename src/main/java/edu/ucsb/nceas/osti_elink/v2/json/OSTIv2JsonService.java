@@ -282,14 +282,16 @@ public class OSTIv2JsonService extends OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataJson) throws OSTIElinkException {
         // Get the OSTI ID associated with this DOI
         String ostiId = getOstiId(doi, doiPrefix);
+        String current_workflow_status = getStatus(doi);
 
         log.debug("OSTIv2JsonService.setMetadata - Processing metadata update for DOI " + doi +
                 " with OSTI ID " + ostiId + ". Metadata:\n" + metadataJson);
 
         // Check if this is a publish command
         // If the metadata contains site_url and workflow_status=R, then it is considered a publish command
+        // If this is an update command but the record has already been released (workflow_status = R), then we will still consider this as a publish command and call /records/submit
         PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
-        if (command.parse(metadataJson)) {
+        if (command.parse(metadataJson) || current_workflow_status.equals("R")) {
             log.info("OSTIv2JsonService.setMetadata - Detected publish identifier command. " +
                     "Will handle via specialized route.");
 
