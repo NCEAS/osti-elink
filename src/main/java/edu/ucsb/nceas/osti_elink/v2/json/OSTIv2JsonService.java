@@ -343,14 +343,6 @@ public class OSTIv2JsonService extends OSTIElinkService {
         log.debug("OSTIv2JsonService.mintIdentifier - the response from the OSTI service is:\n "
                 + new String(response));
 
-        // validate that the response is valid json
-//        try {
-//            final ObjectMapper mapper = new ObjectMapper();
-//            mapper.readTree(response);
-//        } catch (Exception e) {
-//            throw new OSTIElinkException("OSTIv2JsonService.mintIdentifier - Error:  " + new String(response));
-//        }
-
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(response);
