@@ -3,8 +3,6 @@
 
 name: Publish package to GitHub Packages
 on:
-  release:
-    types: [published, prereleased]
   workflow_dispatch:
 jobs:
   publish:
@@ -19,6 +17,6 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Publish package
-        run: mvn --batch-mode -Dmaven.test.skip=true deploy
+        run: mvn --batch-mode -Dmaven.test.skip=true deploy -Pgithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
