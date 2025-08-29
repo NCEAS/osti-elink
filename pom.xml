@@ -88,12 +88,91 @@
                 <version>3.0.0-M1</version>
             </plugin>
         </plugins>
+        <extensions>
+            <!-- Enabling the use of SSH; see `<distributionManagement>` section -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>3.5.3</version>
+            </extension>
+        </extensions>
     </build>
-    <distributionManagement>
-        <repository>
+    <!-- =========================== -->
+    <!--   Profiles for deployment   -->
+    <!-- =========================== -->
+    <profiles>
+        <!-- Normal deploy to DataONE -->
+        <profile>
+            <id>dataone</id>
+            <distributionManagement>
+                <repository>
+                    <id>dataone.org</id>
+                    <name>DataONE Repository</name>
+                    <url>scpexe://maven.dataone.org/var/www/maven</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
+        <!-- GitHub deploy with timestamped jar: mvn clean deploy -Pgithub -->
+        <profile>
             <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/NCEAS/osti-elink</url>
-        </repository>
-    </distributionManagement>
+            <build>
+                <finalName>${project.artifactId}-${project.version}-${build.timestamp}</finalName>
+                <plugins>
+                    <!-- Build helper plugin to generate timestamp -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>timestamp-property</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>timestamp-property</goal>
+                                </goals>
+                                <configuration>
+                                    <name>build.timestamp</name>
+                                    <pattern>yyyyMMdd-HHmmss</pattern>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Deploy plugin: deploy only timestamped jar -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.0.0-M1</version>
+                        <executions>
+                            <execution>
+                                <id>deploy-timestamped-jar</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>${project.build.directory}/${project.build.finalName}.jar</file>
+                                    <pomFile>${project.file}</pomFile>
+                                    <repositoryId>github</repositoryId>
+                                    <url>file:///Users/tao/tmp/github</url>
+                                    <!-- Optional: include timestamp in the artifact version -->
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <groupId>${project.groupId}</groupId>
+                                    <version>${project.version}-${build.timestamp}</version>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/NCEAS/osti-elink</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
