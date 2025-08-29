@@ -155,7 +155,6 @@
                                     <file>${project.build.directory}/${project.build.finalName}.jar</file>
                                     <pomFile>${project.file}</pomFile>
                                     <repositoryId>github</repositoryId>
-                                    <url>file:///Users/tao/tmp/github</url>
                                     <!-- Optional: include timestamp in the artifact version -->
                                     <artifactId>${project.artifactId}</artifactId>
                                     <groupId>${project.groupId}</groupId>
