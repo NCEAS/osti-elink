@@ -17,12 +17,7 @@ import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,8 +82,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
 //    protected static final String minimalMetadataFileJson = "minimal-osti.json";
     protected static final String DEFAULT_MINIMAL_METADATA_FILE_JSON = "minimal-osti.json";
     public static final String MINIMAL_METADATA_FILE_ENV_NAME = "METACAT_OSTI_MINIMAL_METADATA_FILE";
-
-
+    protected static final String CONTRACT_NUMBER = "contract_nos";
+    protected static final String DEFAULT_CONTRACT_NUMBER = "AC02-05CH11231";
 
     /**
      * Constructor. This one will NOT be used.
@@ -513,11 +508,17 @@ public class OSTIv2JsonService extends OSTIElinkService {
             record.remove(WORKFLOW_STATUS);
             record.put(SITE_URL, siteUrl);
 
-            // 4. Call the publish endpoint directly
+            // 4. If the record doesn't have a contractor number, add the default one
+            if (!record.has(CONTRACT_NUMBER)) {
+                record.put(CONTRACT_NUMBER, DEFAULT_CONTRACT_NUMBER);
+            }
+
+            // 5. Call the publish endpoint directly
             String publishUrl = PUBLISH_DOI_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
             String newMetadata = record.toString();
 
-            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Sending to publish endpoint: " + publishUrl +
+            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Sending to publish "
+                      + "endpoint: " + publishUrl +
                     "\nThe modified metadata (removing workflow_status and adding site_url) is:\n" + newMetadata);
 
             byte[] response = sendRequest(PUT, publishUrl, newMetadata);
