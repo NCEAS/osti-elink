@@ -2,6 +2,8 @@ package edu.ucsb.nceas.osti_elink.v2.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,7 +84,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 //    protected static final String minimalMetadataFileJson = "minimal-osti.json";
     protected static final String DEFAULT_MINIMAL_METADATA_FILE_JSON = "minimal-osti.json";
     public static final String MINIMAL_METADATA_FILE_ENV_NAME = "METACAT_OSTI_MINIMAL_METADATA_FILE";
-    protected static final String CONTRACT_NUMBER = "contract_nos";
+    protected static final String CONTRACT_NUMBER_FIELD = "CN_DOE";
     protected static final String DEFAULT_CONTRACT_NUMBER = "AC02-05CH11231";
 
     /**
@@ -509,9 +511,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
             record.put(SITE_URL, siteUrl);
 
             // 4. If the record doesn't have a contractor number, add the default one
-            if (!record.has(CONTRACT_NUMBER)) {
-                record.put(CONTRACT_NUMBER, DEFAULT_CONTRACT_NUMBER);
-            }
+            ensureRequiredFieldsInPublish(record);
 
             // 5. Call the publish endpoint directly
             String publishUrl = PUBLISH_DOI_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
@@ -574,6 +574,116 @@ public class OSTIv2JsonService extends OSTIElinkService {
         UPDATE_METADATA_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and save parameters to construct complete url /records/{id}/save
         PUBLISH_DOI_ENDPOINT_URL = FULL_RECORDS_ENDPOINT_URL; // append osti_id and submit parameters to construct complete url /records/{id}/submit
 
+    }
+
+    /**
+     * In the publish method, need to make sure it has the DOE contract number:
+     * "organizations": [
+     *         {
+     *             "type": "RESEARCHING",
+     *             "name": "Lawrence Livermore National Laboratory (LLNL), Livermore, CA (United States)"
+     *         },
+     *         {
+     *             "type": "SPONSOR",
+     *             "name": "USDOE National Nuclear Security Administration (NNSA)",
+     *             "identifiers": [
+     *                 {
+     *                     "type": "CN_DOE",
+     *                     "value": "AC52-07NA27344"
+     *                 }
+     *             ]
+     *         }
+     *     ],
+     *     "identifiers": [
+     *         {
+     *             "type": "CN_DOE",
+     *             "value": "AC52-07NA27344"
+     *         }
+     * @param root
+     */
+    protected static void ensureRequiredFieldsInPublish(ObjectNode root) {
+        if (root == null) return;
+        // Helper for creating identifiers
+        java.util.function.Function<String, ObjectNode> makeIdentifier = (value) -> {
+            ObjectNode obj = JsonNodeFactory.instance.objectNode();
+            obj.put("type", CONTRACT_NUMBER_FIELD);
+            obj.put("value", value);
+            return obj;
+        };
+
+        // Get or create top-level identifiers array
+        ArrayNode topIds;
+        JsonNode idsNode = root.get("identifiers");
+        if (idsNode != null && idsNode.isArray()) {
+            topIds = (ArrayNode) idsNode;
+        } else {
+            topIds = JsonNodeFactory.instance.arrayNode();
+            root.set("identifiers", topIds);
+        }
+
+        // Locate sponsor organization (create if needed)
+        ArrayNode orgs;
+        JsonNode orgsNode = root.get("organizations");
+        if (orgsNode != null && orgsNode.isArray()) {
+            orgs = (ArrayNode) orgsNode;
+        } else {
+            orgs = JsonNodeFactory.instance.arrayNode();
+            root.set("organizations", orgs);
+        }
+
+        ObjectNode sponsor = null;
+        for (JsonNode org : orgs) {
+            if (org.hasNonNull("type") && "SPONSOR".equals(org.get("type").asText())) {
+                sponsor = (ObjectNode) org;
+                break;
+            }
+        }
+        if (sponsor == null) {
+            sponsor = JsonNodeFactory.instance.objectNode();
+            sponsor.put("type", "SPONSOR");
+            sponsor.put("name", "Unknown Sponsor");
+            orgs.add(sponsor);
+        }
+
+        ArrayNode sponsorIds;
+        JsonNode sIdsNode = sponsor.get("identifiers");
+        if (sIdsNode != null && sIdsNode.isArray()) {
+            sponsorIds = (ArrayNode) sIdsNode;
+        } else {
+            sponsorIds = JsonNodeFactory.instance.arrayNode();
+            sponsor.set("identifiers", sponsorIds);
+        }
+
+        // Extract current CN_DOE values
+        String topValue = findDOEContractValue(topIds, CONTRACT_NUMBER_FIELD);
+        String sponsorValue = findDOEContractValue(sponsorIds, CONTRACT_NUMBER_FIELD);
+
+        // --- Step 4. Apply logic ---
+        if (topValue != null && sponsorValue != null) {
+            // both exist → nothing to do
+            return;
+        } else if (topValue == null && sponsorValue != null) {
+            // copy sponsor → top-level
+            topIds.add(makeIdentifier.apply(sponsorValue));
+        } else if (topValue != null && sponsorValue == null) {
+            // copy top-level → sponsor
+            sponsorIds.add(makeIdentifier.apply(topValue));
+        } else {
+            // both missing → create both with default
+            topIds.add(makeIdentifier.apply(DEFAULT_CONTRACT_NUMBER));
+            sponsorIds.add(makeIdentifier.apply(DEFAULT_CONTRACT_NUMBER));
+        }
+    }
+
+    // Method to find the CN_DOE (DOE contract number) values
+    private static String findDOEContractValue(ArrayNode arr, String type) {
+        for (JsonNode id : arr) {
+            if (id.hasNonNull("type") && type.equals(id.get("type").asText())
+                && id.hasNonNull("value") && !id.get("value").asText().isEmpty()) {
+                return id.get("value").asText();
+            }
+        }
+        return null;
     }
 
     // methods to access the endpoints
