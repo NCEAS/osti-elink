@@ -23,6 +23,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -59,6 +60,7 @@ public abstract class OSTIElinkService {
     protected static final int PUT = 2;
     protected static final int POST = 3;
     protected static final int DELETE = 4;
+    protected static final int PATCH = 5;
     private static final int CONNECTIONS_PER_ROUTE = 8;
     private static final String minimalMetadataFile = "minimal-osti.xml";
 
@@ -371,6 +373,14 @@ public abstract class OSTIElinkService {
                 break;
             case DELETE:
                 request = new HttpDelete(uri);
+                setHeaders(request, uri);
+                break;
+            case PATCH:
+                request = new HttpPatch(uri);
+                if (requestBody != null && requestBody.length() > 0) {
+                    StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
+                    ((HttpPatch) request).setEntity(myEntity);
+                }
                 setHeaders(request, uri);
                 break;
             default:
