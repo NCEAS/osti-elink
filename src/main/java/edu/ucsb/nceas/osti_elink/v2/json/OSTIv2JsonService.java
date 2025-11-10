@@ -301,7 +301,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
             String updateUrl = UPDATE_METADATA_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;
 
             log.debug("OSTIv2JsonService.setMetadata - Sending metadata update to: " + updateUrl);
-            byte[] response = sendRequest(PUT, updateUrl, metadataJson);
+            byte[] response = sendRequest(PATCH, updateUrl, metadataJson);
             String responseStr = new String(response);
 
             log.debug("OSTIv2JsonService.setMetadata - Response from OSTI service: " + responseStr);
