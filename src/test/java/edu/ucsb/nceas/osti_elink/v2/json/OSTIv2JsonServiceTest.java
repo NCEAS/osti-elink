@@ -337,12 +337,7 @@ public class OSTIv2JsonServiceTest {
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-two-osti-id.json")) { // todo ask osti about expected result for metadata with two osti_id
             String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
-            try {
-                service.setMetadata(identifier, null, newMetadata);
-//                fail("Test can't reach here");
-            } catch (Exception e) {
-                assertTrue(e instanceof OSTIElinkException);
-            }
+            service.setMetadata(identifier, null, newMetadata);
             metadata = service.getMetadata(identifier);
             assertTrue(metadata.contains(identifier));
             assertTrue(metadata.contains("\"title\":\"2 - Data from Raczka"));
