@@ -1,11 +1,14 @@
 package edu.ucsb.nceas.osti_elink.v2.json;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.OSTIElinkException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 
+import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -495,5 +498,58 @@ public class OSTIv2JsonServiceTest {
         environmentVariablesMaxQueryAttemptRule.set("METACAT_OSTI_DOI_QUERY_MAX_ATTEMPTS", "100");
         OSTIv2JsonService service4 = new OSTIv2JsonService(null, null, testBaseURL, props);
         assertEquals(100, service4.getMaxAttempts());
+    }
+
+    /**
+     * Test if the method setMetadata can change the site code
+     * @throws Exception
+     */
+    @Test
+    public void testChangeSiteCode() throws Exception {
+        String WRT = "WTR-SFA";
+        String ESS = "ESS-DIVE";
+        String siteCodeName = "site_ownership_code";
+        // Generate a doi with the site code of WTR-SFA
+        String identifier = service.mintIdentifier(WRT);
+        String metadata = null;
+        int index = 0;
+        while (index <= MAX_ATTEMPTS) {
+            try {
+                metadata = service.getMetadata(identifier);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(200);
+            }
+            index++;
+        }
+        String siteCode = JsonResponseHandler.getPathValue(metadata, siteCodeName);
+        assertEquals(WRT, siteCode);
+
+        // If the new metadata doesn't have a site code, it will still keep the original one
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id.json")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            service.setMetadata(identifier, null, newMetadata);
+            metadata = service.getMetadata(identifier);
+            assertTrue(metadata.contains("\"title\":\"0 - Data from Raczka"));
+            siteCode = JsonResponseHandler.getPathValue(metadata, siteCodeName);
+            assertEquals(WRT, siteCode);
+        }
+
+        // If the new metadata does have a site code, it will overwrite the original one since we
+        // use the patch http command
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id.json")) {
+            String newMetadata = IOUtils.toString(is, StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode node = (ObjectNode) mapper.readTree(newMetadata);
+            node.put(siteCodeName, ESS);
+            String modifiedNewMetadata = mapper.writeValueAsString(node);
+            service.setMetadata(identifier, null, modifiedNewMetadata);
+            metadata = service.getMetadata(identifier);
+            assertTrue(metadata.contains("\"title\":\"0 - Data from Raczka"));
+            siteCode = JsonResponseHandler.getPathValue(metadata, siteCodeName);
+            assertEquals(ESS, siteCode);
+        }
     }
 }
