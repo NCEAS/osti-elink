@@ -32,9 +32,7 @@ import java.io.UnsupportedEncodingException;
 
 public class OSTIv2JsonService extends OSTIElinkService {
 
-    // The baseURL specifies the default endpoint for the OSTI v2 JSON API.
-    // It can be overridden by the environment variable METACAT_OSTI_BASE_URL.
-    protected String BASE_URL = "https://www.osti.gov";
+    private static final String DEFUALT_BASE_URL = "https://www.osti.gov";
 
     // The name of the environment variable used to specify the base URL for the OSTI service.
     // This variable can override the default base URL provided in the application configuration.
@@ -538,7 +536,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     protected void constructURLs() throws OSTIElinkException {
         // get the base URL from the property file
-        log.info("OSTIv2JsonService.constructURLs(): The base URL from the property file is " + BASE_URL);
+        log.info("OSTIv2JsonService.constructURLs(): The base URL from the property file is " + baseURL);
 
         // get the base URL from the environment variable
         // overwrites the one from the property file
@@ -547,23 +545,23 @@ public class OSTIv2JsonService extends OSTIElinkService {
         if (url != null && !url.trim().equals("")) {
             log.info("OSTIv2JsonService.constructURLs(): The base URL from the env variable " + BASE_URL_ENV_NAME
                     + " is " + url + " and the value overwrites the one from the property file");
-            BASE_URL = url;
+            baseURL = url;
 
         }
 
-        // error checking for baseURL
-        if (BASE_URL == null) {
-            throw new OSTIElinkException("OSTIv2JsonService.constructURLs(): The base URL for the osti service is null");
+        // Use the default one
+        if (baseURL == null || baseURL.trim().equals("")) {
+            baseURL = DEFUALT_BASE_URL;
         }
 
         // baseURL should end with a "/"
         // baseURL will be "https://www.osti.gov/" in production or "https://review.osti.gov/" in test environments.
-        if (!BASE_URL.endsWith("/")) {
-            BASE_URL = BASE_URL + "/";
+        if (!baseURL.endsWith("/")) {
+            baseURL = baseURL + "/";
         }
 
         // example value for QUERY_URL: www.osti.gov/elink2api
-        QUERY_URL = BASE_URL + v2JsonContext;
+        QUERY_URL = baseURL + v2JsonContext;
         // Defines the constant for the full URL to access the "records" endpoint in the OSTI API.
         // example value for FULL_RECORDS_ENDPOINT_URL: www.osti.gov/elink2api/records
         FULL_RECORDS_ENDPOINT_URL = QUERY_URL + "/" + DOI_RECORDS_ENDPOINT;
@@ -688,7 +686,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
 
     // methods to access the endpoints
     protected String getBaseUrl() {
-        return BASE_URL;
+        return baseURL;
     }
 
     protected String getQueryUrl() {
