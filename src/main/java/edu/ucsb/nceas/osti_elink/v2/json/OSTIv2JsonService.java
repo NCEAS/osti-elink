@@ -440,7 +440,8 @@ public class OSTIv2JsonService extends OSTIElinkService {
         }
     }
 
-    public String parseOSTIidFromResponse(String metadata, String doi)
+    @Override
+    protected String parseOSTIidFromResponse(String metadata, String doi)
             throws OSTIElinkException{
         if (metadata == null || metadata.trim().equals("")) {
             throw new OSTIElinkException("The service can't parse the blank response to get the "
