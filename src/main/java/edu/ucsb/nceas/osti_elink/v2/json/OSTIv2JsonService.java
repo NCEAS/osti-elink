@@ -286,7 +286,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
         // If the metadata contains site_url and workflow_status=R, then it is considered a publish command
         // If this is an update command but the record has already been released (workflow_status = R), then we will still consider this as a publish command and call /records/submit
         PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
-        if (command.parse(metadataJson) || current_workflow_status.equals("R")) {
+        if (command.parse(metadataJson)) {
             log.info("OSTIv2JsonService.setMetadata - Detected publish identifier command. " +
                     "Will handle via specialized route.");
 
