@@ -17,10 +17,10 @@ import org.apache.commons.logging.LogFactory;
 public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishIdentifierCommand {
     private static final Log log = LogFactory.getLog(PublishIdentifierCommand.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final String WORKFLOW_STATUS = "workflow_status";
-    private static final String SITE_URL = "site_url";
+    public static final String WORKFLOW_STATUS = "workflow_status";
+    public static final String SITE_URL = "site_url";
     private static final String OSTI_ID = "osti_id";
-    private static final String RELEASED_STATUS = "R"; // Released status
+    public static final String RELEASED_STATUS = "R"; // Released status
 
     /**
      * Constructor
