@@ -60,11 +60,6 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
                 recordNode = rootNode;
             }
 
-            // Check if it has the required fields
-            if (!recordNode.has(OSTI_ID)) {
-                log.debug("v2.json.PublishIdentifierCommand: JSON doesn't have an 'osti_id' field");
-                return false;
-            }
 
             if (!recordNode.has(SITE_URL)) {
                 log.debug("v2.json.PublishIdentifierCommand: JSON doesn't have a 'site_url' field");
@@ -84,7 +79,9 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
             }
 
             // Extract the required fields
-            this.ostiId = recordNode.get(OSTI_ID).asText();
+            if (rootNode.get(OSTI_ID) != null) {
+                this.ostiId = recordNode.get(OSTI_ID).asText();
+            }
             this.url = recordNode.get(SITE_URL).asText();
 
             log.debug("v2.json.PublishIdentifierCommand: Successfully parsed publish request with osti_id: " +

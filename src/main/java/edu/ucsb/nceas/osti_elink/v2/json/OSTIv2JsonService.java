@@ -291,7 +291,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
                     "Will handle via specialized route.");
 
             // Use the specialized publication handler which handles the workflow status to site_url conversion
-            handlePublishIdentifierCommand(command.getOstiId(), command.getUrl());
+            handlePublishIdentifierCommand(ostiId, command.getUrl());
         } else {
             log.debug("OSTIv2JsonService.setMetadata - Standard metadata update (not a publish command)");
 
