@@ -1,0 +1,98 @@
+{
+  "access_limitations": ["UNL"],
+  "product_type": "DA",
+  "title": "Specific conductivity, pH, dissolved oxygen, water temperature and alkalinity in-situ data; Slate River floodplain, Crested Butte, CO; March 2021-October 2021",
+  "description": "This data package includes a time-series of field measurements from March to October 2021 in groundwater and surface water from the Slate River floodplain in Crested Butte, CO, a focus field site for the SLAC Floodplain Hydro-Biogeochemistry SFA. The data was generated as part of the work targeting the overarching research question for the SLAC SFA: How do ubiquitous subsurface interfaces mediate molecular-scale biogeochemical processes and groundwater quality in floodplains and watersheds? The data package includes 5 data files, one for each measured variable: specific conductivity, pH, dissolved oxygen, water temperature and alkalinity. All measurements were recorded in the field immediately after water sampling. Groundwater samples were extracted from a network of installed rhizons (Rhizosphere Research Products, part no. 19.60.21F, 0.6 micrometer mesh size) and piezometer wells within the floodplain. In addition to the data files, there is a terminology file explaining the terms used, a file level metadata file, and a sensor file with metadata about the sensors used.\nAll files are in csv format.",
+  "publication_date": "2021-10-26",
+  "geolocations": [
+    {
+      "label": "The Slate River (SR) a snow-dominated, headwater basin of the Upper Colorado River Basin (UCRB) located in the western United States. The SR is located just north of the town of Crested Butte, CO.",
+      "points": [
+        {
+          "latitude": 38.910142,
+          "longitude": -107.030593
+        },
+        {
+          "latitude": 38.896436,
+          "longitude": -107.011096
+        }
+      ],
+      "type": "BOX"
+    }
+  ],
+  "keywords": [
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY > GASES > DISSOLVED OXYGEN",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY > WATER CHARACTERISTICS > ALKALINITY",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY > WATER CHARACTERISTICS > CONDUCTIVITY",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY > WATER CHARACTERISTICS > WATER TEMPERATURE",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY > WATER CHARACTERISTICS > pH",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > GROUND WATER > GROUNDWATER CHEMISTRY",
+    "EARTH SCIENCE > LAND SURFACE > SOILS",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > GROUND WATER",
+    "EARTH SCIENCE > TERRESTRIAL HYDROSPHERE > WATER QUALITY/WATER CHEMISTRY"
+  ],
+  "organizations": [
+    {
+      "type": "RESEARCHING",
+      "name": "Groundwater Quality SFA"
+    },
+    {
+      "type": "SPONSOR",
+      "name": "ESS-DIVE",
+      "identifiers": [
+        {
+          "type": "CN_DOE",
+          "value": "AC02-05CH11231"
+        }
+      ]
+    },
+    {
+      "type": "SPONSOR",
+      "name": "U.S. DOE > Office of Science > Biological and Environmental Research (BER)"
+    }
+  ],
+  "identifiers": [
+    {
+      "type": "CN_DOE",
+      "value": "AC02-05CH11231"
+    }
+  ],
+  "persons": [
+    {
+      "type": "AUTHOR",
+      "orcid": "https://orcid.org/0000-0001-7614-0227",
+      "first_name": "Samuel",
+      "last_name": "Pierce",
+      "affiliations": [
+        {
+          "name": "SLAC National Accelerator Laboratory"
+        }
+      ],
+      "email": ["swpierce@slac.stanford.edu"]
+    },
+    {
+      "type": "AUTHOR",
+      "orcid": "https://orcid.org/0000-0001-9303-4901",
+      "first_name": "John",
+      "last_name": "Bargar",
+      "affiliations": [
+        {
+          "name": "SLAC National Accelerator Laboratory"
+        }
+      ],
+      "email": ["bargar@slac.stanford.edu"]
+    },
+    {
+      "type": "CONTACT",
+      "orcid": "https://orcid.org/0000-0001-7614-0227",
+      "first_name": "Samuel",
+      "last_name": "Pierce",
+      "affiliations": [
+        {
+          "name": "SLAC National Accelerator Laboratory"
+        }
+      ],
+      "email": ["swpierce@slac.stanford.edu"]
+    }
+  ]
+}
