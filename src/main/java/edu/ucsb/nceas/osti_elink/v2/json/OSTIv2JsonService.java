@@ -277,7 +277,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataJson) throws OSTIElinkException {
         // Get the OSTI ID associated with this DOI
         String ostiId = getOstiId(doi, doiPrefix);
-        String current_workflow_status = getStatus(doi);
+        //String currentWorkflowStatus = getStatus(doi);
 
         log.debug("OSTIv2JsonService.setMetadata - Processing metadata update for DOI " + doi +
                 " with OSTI ID " + ostiId + ". Metadata:\n" + metadataJson);

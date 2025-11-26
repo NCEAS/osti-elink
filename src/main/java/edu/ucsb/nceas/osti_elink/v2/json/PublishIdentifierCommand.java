@@ -30,10 +30,7 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
 
     /**
      * Parse metadata to determine if it represents a publish command.
-     * A publish command is determined by:
-     * 1. The metadata contains site_url
-     * 2. The workflow_status field equals "R" (Released)
-     *
+     * A publish command is determined by: The metadata contains site_url
      * @param json The JSON metadata string to parse
      * @return true if this metadata represents a publish request, false otherwise
      * @throws OSTIElinkException if JSON parsing fails
@@ -63,18 +60,6 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
 
             if (!recordNode.has(SITE_URL)) {
                 log.debug("v2.json.PublishIdentifierCommand: JSON doesn't have a 'site_url' field");
-                return false;
-            }
-
-            if (!recordNode.has(WORKFLOW_STATUS)) {
-                log.debug("v2.json.PublishIdentifierCommand: JSON doesn't have a 'workflow_status' field");
-                return false;
-            }
-
-            // Check if workflow_status indicates this is a publish request
-            String status = recordNode.get(WORKFLOW_STATUS).asText();
-            if (!RELEASED_STATUS.equals(status)) {
-                log.debug("v2.json.PublishIdentifierCommand: workflow_status is '" + status + "', not 'R' (Released), so not a publish request");
                 return false;
             }
 
