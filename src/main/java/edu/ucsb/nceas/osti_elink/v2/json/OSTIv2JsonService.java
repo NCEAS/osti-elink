@@ -520,7 +520,7 @@ public class OSTIv2JsonService extends OSTIElinkService {
                       + "endpoint: " + publishUrl +
                     "\nThe modified metadata (removing workflow_status and adding site_url) is:\n" + newMetadata);
 
-            byte[] response = sendRequest(PUT, publishUrl, newMetadata);
+            byte[] response = sendRequest(PATCH, publishUrl, newMetadata);
             String responseStr = new String(response);
 
             log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Response from OSTI service: " + responseStr);
