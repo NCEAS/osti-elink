@@ -1,9 +1,10 @@
 package edu.ucsb.nceas.osti_elink;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.ucsb.nceas.osti_elink.v2.json.OSTIv2JsonServiceTest;
-import edu.ucsb.nceas.osti_elink.v2.json.PublishIdentifierCommand;
 import edu.ucsb.nceas.osti_elink.v2.xml.OSTIv2XmlServiceTest;
 import org.junit.After;
 import org.junit.Before;
@@ -139,7 +140,7 @@ public class OSTIElinkClientV2JsonTest {
         assertEquals("R", status);
 
 
-        //Set a new metadata with the set_reserved. The status will change to "Saved".
+        //Set a new metadata without the site url. The status will change to "Saved".
         try (InputStream is = getClass().getClassLoader()
             .getResourceAsStream("test-files/input-no-osti-id-without-site-url-2.json")) {
             String newMetadata = OSTIv2XmlServiceTest.toString(is);
@@ -159,24 +160,35 @@ public class OSTIElinkClientV2JsonTest {
             assertTrue(metadata.contains("\"title\":\"2. Specific conductivity"));
         }
 
-        // Republish again
-        String anotherSiteUrl = "https://knb.ecoinformatics.org/view/doi%3A10.5063%2FF1D50KFR";
-        publish = generatePublishIdentifierCommandWithSiteURL(anotherSiteUrl);
-        client.setMetadata(identifier, publish);
-        index = 0;
-        status = client.getStatus(identifier);
-        while (!status.equals("R") && index < OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
-            Thread.sleep(200);
-            index++;
+        // Set the metadata with the site url. It should be R again
+        try (InputStream is = getClass().getClassLoader()
+            .getResourceAsStream("test-files/input-no-osti-id-without-site-url.json")) {
+            String anotherSiteUrl = "https://knb.ecoinformatics.org/view/doi%3A10.5063%2FF1D50KFR";
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(is);
+            ObjectNode objectNode = (ObjectNode) rootNode;
+            objectNode.put(edu.ucsb.nceas.osti_elink.v2.json.PublishIdentifierCommand.SITE_URL,
+                           anotherSiteUrl); // Add a new name/value pair
+            // Convert the modified JsonNode back to a JSON string
+            String modifiedJsonString = objectMapper.writeValueAsString(objectNode);
+            client.setMetadata(identifier, modifiedJsonString);
+            index = 0;
             status = client.getStatus(identifier);
+            while (!status.equals("R") && index < OSTIv2XmlServiceTest.MAX_ATTEMPTS) {
+                Thread.sleep(200);
+                index++;
+                status = client.getStatus(identifier);
+            }
+            assertEquals("R", status);
+            metadata = client.getMetadata(identifier);
+            assertTrue(metadata.contains(identifier));
+            assertFalse(metadata.contains(newSiteUrl));
+            assertFalse(metadata.contains(siteUrl));
+            assertTrue(metadata.contains(anotherSiteUrl));
+            assertTrue(metadata.contains("\"title\":\"Specific conductivity"));
+
         }
-        assertEquals("R", status);
-        metadata = client.getMetadata(identifier);
-        assertTrue(metadata.contains(identifier));
-        assertFalse(metadata.contains(newSiteUrl));
-        assertFalse(metadata.contains(siteUrl));
-        assertTrue(metadata.contains(anotherSiteUrl));
-        assertTrue(metadata.contains("\"title\":\"2. Specific conductivity"));
+
     }
 
     /**
@@ -189,9 +201,6 @@ public class OSTIElinkClientV2JsonTest {
         throws JsonProcessingException {
         Map<String, Object> params = new HashMap<>();
         params.put(edu.ucsb.nceas.osti_elink.v2.json.PublishIdentifierCommand.SITE_URL, siteURL);
-        params.put(
-            edu.ucsb.nceas.osti_elink.v2.json.PublishIdentifierCommand.WORKFLOW_STATUS,
-            PublishIdentifierCommand.RELEASED_STATUS);
         String payload = new ObjectMapper().writeValueAsString(params);
         return payload;
     }
