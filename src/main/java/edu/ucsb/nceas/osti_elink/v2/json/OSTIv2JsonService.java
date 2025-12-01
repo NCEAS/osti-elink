@@ -504,35 +504,39 @@ public class OSTIv2JsonService extends OSTIElinkService {
         try {
             // 2. Parse the metadata to get the record
             ObjectNode record = JsonResponseHandler.getFirstNodeInArray(jsonMetadata);
-
-            // 3. Prepare metadata for publishing - by replacing workflow_status with site_url
-            record.remove(WORKFLOW_STATUS);
-            record.put(SITE_URL, siteUrl);
-
-            // 4. If the record doesn't have a contractor number, add the default one
-            ensureRequiredFieldsInPublish(record);
-
-            // 5. Call the publish endpoint directly
-            String publishUrl = PUBLISH_DOI_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
-            String newMetadata = record.toString();
-
-            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Sending to publish "
-                      + "endpoint: " + publishUrl +
-                    "\nThe modified metadata (removing workflow_status and adding site_url) is:\n" + newMetadata);
-
-            byte[] response = sendRequest(PATCH, publishUrl, newMetadata);
-            String responseStr = new String(response);
-
-            log.debug("OSTIv2JsonService.handlePublishIdentifierCommand(): Response from OSTI service: " + responseStr);
-
-            // Verify the response
-            JsonResponseHandler.isResponseWithError(responseStr);
-
-            log.info("OSTIv2JsonService.handlePublishIdentifierCommand(): Successfully published OSTI ID " + ostiId);
-
+            handleSubmit(ostiId, siteUrl, record);
         } catch (JsonProcessingException e) {
             throw new OSTIElinkException("Error processing metadata for OSTI ID " + ostiId + ": " + e.getMessage());
         }
+    }
+
+    protected void handleSubmit(String ostiId, String siteUrl, ObjectNode record)
+        throws OSTIElinkException {
+        // Prepare metadata for publishing - by replacing workflow_status with site_url
+        record.remove(WORKFLOW_STATUS);
+        record.put(SITE_URL, siteUrl);
+
+        // If the record doesn't have a contractor number, add the default one
+        ensureRequiredFieldsInPublish(record);
+        //Call the publish endpoint directly
+        String publishUrl =
+            PUBLISH_DOI_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SUBMIT_PARAMETER;
+        String newMetadata = record.toString();
+        log.debug("Sending to publish " + "endpoint: " + publishUrl
+                      + "\nThe modified metadata (removing workflow_status and adding site_url) "
+                      + "is:\n"
+                      + newMetadata);
+
+        byte[] response = sendRequest(PATCH, publishUrl, newMetadata);
+        String responseStr = new String(response);
+
+        log.debug("Response from OSTI service: " + responseStr);
+
+        // Verify the response
+        JsonResponseHandler.isResponseWithError(responseStr);
+
+        log.info("Successfully published OSTI ID " + ostiId);
+
     }
 
     protected void constructURLs() throws OSTIElinkException {
