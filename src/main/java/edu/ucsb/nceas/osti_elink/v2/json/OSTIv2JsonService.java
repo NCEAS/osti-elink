@@ -12,8 +12,6 @@ import edu.ucsb.nceas.osti_elink.OSTIElinkAuthenticationException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkNotFoundException;
 import edu.ucsb.nceas.osti_elink.OSTIElinkService;
 import edu.ucsb.nceas.osti_elink.OSTIServiceFactory;
-import edu.ucsb.nceas.osti_elink.PublishIdentifierCommandFactory;
-import edu.ucsb.nceas.osti_elink.PublishIdentifierCommand;
 import edu.ucsb.nceas.osti_elink.exception.PropertyNotFound;
 import edu.ucsb.nceas.osti_elink.v2.response.JsonResponseHandler;
 import org.apache.commons.io.FileUtils;
@@ -277,23 +275,23 @@ public class OSTIv2JsonService extends OSTIElinkService {
     public void setMetadata(String doi, String doiPrefix, String metadataJson) throws OSTIElinkException {
         // Get the OSTI ID associated with this DOI
         String ostiId = getOstiId(doi, doiPrefix);
-        //String currentWorkflowStatus = getStatus(doi);
 
         log.debug("OSTIv2JsonService.setMetadata - Processing metadata update for DOI " + doi +
                 " with OSTI ID " + ostiId + ". Metadata:\n" + metadataJson);
 
         // Check if this is a publish command
-        // If the metadata contains site_url and workflow_status=R, then it is considered a publish command
-        // If this is an update command but the record has already been released (workflow_status = R), then we will still consider this as a publish command and call /records/submit
-        PublishIdentifierCommand command = PublishIdentifierCommandFactory.getInstance(this);
+        PublishIdentifierCommand command = new PublishIdentifierCommand();
         if (command.parse(metadataJson)) {
-            log.info("OSTIv2JsonService.setMetadata - Detected publish identifier command. " +
-                    "Will handle via specialized route.");
-
+            log.info("Detected publish identifier command for " + doi
+                         + ". Will handle via specialized route.");
             // Use the specialized publication handler which handles the workflow status to site_url conversion
             handlePublishIdentifierCommand(ostiId, command.getUrl());
+        } else if (command.hasSiteURL()) {
+            log.info("Detected the site url field for " + doi
+                         + ". Will handle via the submit route.");
+            handleSubmit(ostiId, command.getUrl(), (ObjectNode)command.getRecordNode());
         } else {
-            log.debug("OSTIv2JsonService.setMetadata - Standard metadata update (not a publish command)");
+            log.info("Standard metadata update (no site url)");
 
             // For standard updates to datasets that are in saved (SV) status, use the /records/{id}/save endpoint
             String updateUrl = UPDATE_METADATA_ENDPOINT_URL + "/" + ostiId + "/" + DOI_RECORDS_ENDPONT_SAVE_PARAMETER;

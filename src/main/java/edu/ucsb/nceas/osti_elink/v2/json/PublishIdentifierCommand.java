@@ -21,7 +21,8 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
     public static final String SITE_URL = "site_url";
     private static final String OSTI_ID = "osti_id";
     public static final String RELEASED_STATUS = "R"; // Released status
-
+    private boolean hasSiteURL = false;
+    private JsonNode recordNode;
     /**
      * Constructor
      */
@@ -30,7 +31,7 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
 
     /**
      * Parse metadata to determine if it represents a publish command.
-     * A publish command is determined by: The metadata contains site_url
+     * A publish command is determined by: The metadata contains site_url and only has this field
      * @param json The JSON metadata string to parse
      * @return true if this metadata represents a publish request, false otherwise
      * @throws OSTIElinkException if JSON parsing fails
@@ -47,7 +48,6 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
             JsonNode rootNode = mapper.readTree(json);
 
             // Check if parsing multiple records or single record
-            JsonNode recordNode;
             if (rootNode.isArray() && rootNode.size() > 0) {
                 // If it's an array, use the first record
                 recordNode = rootNode.get(0);
@@ -61,22 +61,39 @@ public class PublishIdentifierCommand extends edu.ucsb.nceas.osti_elink.PublishI
             if (!recordNode.has(SITE_URL)) {
                 log.debug("v2.json.PublishIdentifierCommand: JSON doesn't have a 'site_url' field");
                 return false;
-            }
-
-            // Extract the required fields
-            if (rootNode.get(OSTI_ID) != null) {
-                this.ostiId = recordNode.get(OSTI_ID).asText();
+            } else {
+                log.debug("JSON does have the 'site_url' field");
+                hasSiteURL = true;
             }
             this.url = recordNode.get(SITE_URL).asText();
-
-            log.debug("v2.json.PublishIdentifierCommand: Successfully parsed publish request with osti_id: " +
-                    this.ostiId + " and site_url: " + this.url);
-
+            log.debug("The request has a site_url: " + this.url);
+            // This size check must be conducted after checking site urls
+            if (recordNode.size() != 1) {
+                log.debug("The request has a site_url: " + this.url + " but also has more fields "
+                              + "than that. So it is not a pure publish request.");
+                return false;
+            }
             return true;
 
         } catch (JsonProcessingException e) {
             log.debug("v2.json.PublishIdentifierCommand: Failed to parse JSON: " + e.getMessage());
             throw new OSTIElinkException("v2.json.PublishIdentifierCommand: Failed to parse JSON metadata: " + e.getMessage());
         }
+    }
+
+    /**
+     * Check if the json file has the site url after calling the parse method
+     * @return true if it has; otherwise false.
+     */
+    public boolean hasSiteURL() {
+        return this.hasSiteURL;
+    }
+
+    /**
+     * Get the JsonNode representation of the json string
+     * @return the json node
+     */
+    public JsonNode getRecordNode() {
+        return this.recordNode;
     }
 }
